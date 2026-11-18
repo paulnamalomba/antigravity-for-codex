@@ -27,7 +27,7 @@ break for callers even when every test passes.
 13 agy missing · 14 model unavailable · 15 permission denied
 ```
 
-The same table appears in `docs/TROUBLESHOOTING.md` and in `skills/antigravity/SKILL.md`. If
+The same table appears in `docs/claude/TROUBLESHOOTING.md` and in `skills/antigravity/SKILL.md`. If
 a diff adds, removes or repurposes a code, all three move together or it is a bug.
 
 **Machine-readable stderr lines** — `AGY_SIGNAL {...}` (a classified failure) and
@@ -89,7 +89,7 @@ This repo tracks an upstream CLI that changes fast, so the docs make dated, fals
 claims. Two failure modes:
 
 - **A claim the diff contradicts.** If the code now behaves differently from what
-  `README.md`, `SKILL.md`, `docs/*.md`, `commands/*.md` or `agents/*.md` says, that is a bug
+  `README.md`, `SKILL.md`, `docs/claude/*.md`, `commands/*.md` or `agents/*.md` says, that is a bug
   in the PR, not a follow-up.
 - **A claim changed in one place only.** A behavioural statement about `agy` typically lives
   in several documents **and in runtime strings inside `scripts/*.sh`** — a warning the
