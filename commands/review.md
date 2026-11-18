@@ -9,6 +9,7 @@ current changes, then reconcile the findings yourself (you are the final judge).
 Scope/flags: $ARGUMENTS
 
 Do this:
+
 1. Capture the diff: `git diff` (or the range/paths in the scope above; default to
    uncommitted + last commit if unspecified).
 2. Delegate the review to agy (`pro` tier = Gemini 4 Carbon High, falling back automatically on plans without Carbon) — pipe the diff in on stdin with `--read-only`:

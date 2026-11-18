@@ -7,6 +7,7 @@ Run the plugin's doctor and report status.
 Run: `agy-doctor`
 
 Then summarize for the user:
+
 - Is `agy` installed, and can it list models (i.e. authenticated)?
 - Are the plugin scripts executable?
 - What GCP project / region / default model is `agy` configured for?

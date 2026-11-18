@@ -9,6 +9,7 @@ following the `antigravity` skill's **Cost discipline** and **Verification gates
 Task: $ARGUMENTS
 
 Do this:
+
 1. Pick a tier (`flash` default = Gemini 4 Hydrogen High; `flash-lo` = Hydrogen Low; `pro` = Gemini 4 Carbon High; auto-falls-back on plans without Carbon/Hydrogen). If the task needs the repo,
    add `--dir <repo-root>` (or `--dir .` inside the `antigravity-delegate` subagent, whose gate confines `-d`/`--dir`/`--add-dir` to `cwd`) so agy reads the real files (don't paste them into context).
    - **Read/analysis tasks**: pass `--read-only` (and `--allow-url` if reading web URLs) so `agy 1.5.7+` default `Auto` mode cannot edit files or run shell commands.

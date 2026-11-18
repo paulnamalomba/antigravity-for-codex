@@ -570,6 +570,7 @@ assertion — a PoC harness that cannot produce an *allowed* command would let e
 assertion pass on a broken payload, which has happened in this suite before.
 
 ## 0.24.0
+
 - **agy turned the write-without-grant denial into a hard error, and exit 15 quietly
   stopped happening.** Since 1.1.3 a denied tool in headless mode came back as rc 0 with
   empty stdout and `auto-denied` on stderr; the wrapper matched that and returned **15**
@@ -668,6 +669,7 @@ assertion pass on a broken payload, which has happened in this suite before.
   narrower and checkable: the code named beside the old version alone.
 
 ## 0.23.0
+
 - **New: `/antigravity:migrate` — move an existing Claude Code setup onto agy.**
   `agy plugin import claude` already exists, and on any current install it prints
   `No claude extensions found.` and exits 0: it scans `~/.claude/plugins/<name>/` one
@@ -757,6 +759,7 @@ assertion pass on a broken payload, which has happened in this suite before.
   full layout reference and compatibility matrix.
 
 ## 0.22.5
+
 - **`doctor` now asks agy which model it will run, instead of inferring it from a version
   string.** 0.22.4 added a warning for agy below 1.1.10, where `--model` was ignored in
   headless `-p`. That warning is the best a version comparison can do, and a version
@@ -911,6 +914,7 @@ assertion pass on a broken payload, which has happened in this suite before.
   scoped, and pinned by a test, which is what the five documents still lack.
 
 ## 0.22.4
+
 - **`--tier` did nothing on agy below 1.1.10, and nothing said so.** agy 1.1.10 fixed
   `--model` and `--effort` being *ignored in headless `-p`* — the flag was applied after
   model configuration had initialised, so the run silently fell back to the persisted
@@ -935,6 +939,7 @@ assertion pass on a broken payload, which has happened in this suite before.
   minor, and an unparseable version, which is left alone rather than warned about.
 
 ## 0.22.3
+
 - **The bash gate now says *why* it blocked** ([#51](https://github.com/yuting0624/antigravity-for-claude-code/issues/51),
   reported by @potch8228 with a six-case repro table that reproduced exactly).
   `hooks/validate-delegate-bash.sh` rejects an unquoted newline — correctly, since a bare
@@ -977,6 +982,7 @@ assertion pass on a broken payload, which has happened in this suite before.
   wrong).
 
 ## 0.22.2
+
 - **Correction: `--yolo` is not the only way to grant a headless write, and we said it was
   in eight places.** A `write_file(<dir>)` entry under `permissions.allow` in
   `~/.gemini/antigravity-cli/settings.json` grants writes **recursively beneath `<dir>`**
@@ -1009,6 +1015,7 @@ assertion pass on a broken payload, which has happened in this suite before.
   assumes.
 
 ## 0.22.1
+
 - **Fix: every wrapper hung forever when stdio MCP servers were configured.** Reported by
   @rickberguer (#37) on macOS with a healthy, authenticated agy. `agy`'s stdio MCP children
   **inherit its stdout and outlive it**, so they hold the write end of a command-substitution
@@ -1043,6 +1050,7 @@ assertion pass on a broken payload, which has happened in this suite before.
   not the pipe mechanism this release removes.
 
 ## 0.22.0
+
 - **Docs: the number of delegations is the lever — batch them.** Benchmarking this
   plugin (Opus 5 conductor · Gemini 3.6 Flash High executor · agy 1.1.8 · n=3/arm, cold
   cache) confirmed the per-delegation economics and located what actually breaks them.
@@ -1118,6 +1126,7 @@ assertion pass on a broken payload, which has happened in this suite before.
   `gemini-3.6-flash-high` when your plan serves it.
 
 ## 0.21.1
+
 - **Fix: the JSON-mode capability probe could silently disable structured output
   (SIGPIPE race).** `agy-delegate.sh` probed support with
   `agy --help 2>&1 | grep -q -- '--output-format'`. `grep -q` exits at the first match and
@@ -1139,6 +1148,7 @@ assertion pass on a broken payload, which has happened in this suite before.
   reading; that was over-concluded from a sample where `cache_read < input`.
 
 ## 0.21.0
+
 - **Structured output (agy 1.1.8): reliable failure classification + real executor token
   usage.** agy 1.1.8 shipped `--output-format json` — the thing we'd tracked as "not
   externally available" since 0.13. The wrapper now uses it **internally**, and the
@@ -1164,6 +1174,7 @@ assertion pass on a broken payload, which has happened in this suite before.
   SKILL) — that statement is no longer true as of agy 1.1.8.
 
 ## 0.20.0
+
 - **New: multimodal delegation — `/antigravity:media` (`agy-media`).** Claude Code can't
   hear audio or watch video, and doing it locally means an ffmpeg + speech-model stack.
   Gemini is natively multimodal, so this delegates the perception to agy — **no local
@@ -1189,6 +1200,7 @@ assertion pass on a broken payload, which has happened in this suite before.
     (~30-min chunks) if it still times out.
 
 ## 0.19.0
+
 - **Security: harden the delegate subagent's Bash gate against command-injection bypass**
   ([#29](https://github.com/yuting0624/antigravity-for-claude-code/issues/29), reported by
   **@ktseo41**). `hooks/validate-delegate-bash.sh` is the *only* restriction on what the
@@ -1211,6 +1223,7 @@ assertion pass on a broken payload, which has happened in this suite before.
   noted its absence). Report via GitHub Security advisories.
 
 ## 0.18.4
+
 - **`bin/measure-session` shim** — `measure-session.py` was the only script without a `bin/`
   entrypoint, so it couldn't be run by bare name from a marketplace install (only via the
   `scripts/` path, which doesn't resolve from a user's own repo). It now has a shim like the
@@ -1223,6 +1236,7 @@ assertion pass on a broken payload, which has happened in this suite before.
   each with an auditable `transcript.jsonl` via `agy-trace`).
 
 ## 0.18.3
+
 - **`doctor` fix — recognize tier models across `agy models` format changes.** agy 1.1.5
   switched `agy models` output from **display names** (`Gemini 3.5 Flash (High)`) to
   **slugs** (`gemini-3.5-flash`), which broke doctor's strict `grep` and made it **falsely
@@ -1242,6 +1256,7 @@ assertion pass on a broken payload, which has happened in this suite before.
   native Windows headless (`#508`/`#6`) unresolved.
 
 ## 0.18.2
+
 - **agy 1.1.3: headless write model changed again — `--yolo` is now the durable grant.**
   All verified live on 1.1.3:
   - 1.1.3 **removes the scratch-divert**: a write/tool needing permission is now
@@ -1260,6 +1275,7 @@ assertion pass on a broken payload, which has happened in this suite before.
     headless (`#508`/`#6`) is **still unresolved** — WSL guidance and plain-text parsing stay.
 
 ## 0.18.1
+
 - **New structured failure `14` — model unavailable** (agy 1.1.2): agy now **hard-fails**
   (instead of silently downgrading to the default model) when `--model` can't be resolved.
   The wrapper classifies this into exit `14` + `AGY_SIGNAL {MODEL_UNAVAILABLE}` and prints
@@ -1274,6 +1290,7 @@ assertion pass on a broken payload, which has happened in this suite before.
   plain-text parsing stay.
 
 ## 0.18.0
+
 - **agy 1.1.0 support — `--mode accept-edits|plan` passthrough** (all behaviors below
   verified live on 1.1.0):
   - 1.1.0 makes **review-first** the default execution mode. Headless consequence
@@ -1296,6 +1313,7 @@ assertion pass on a broken payload, which has happened in this suite before.
     "prefer `--mode accept-edits`, escalate to `--yolo` only for tools" split.
 
 ## 0.17.0
+
 - **Frictionless delegation — no slash command required, judgment stays with Claude.**
   Two additions reduce the "you must type `/antigravity:delegate` every time" friction,
   while deliberately NOT auto-routing (full automation below the break-even is a
@@ -1313,6 +1331,7 @@ assertion pass on a broken payload, which has happened in this suite before.
     `delegation_nudge` plugin option.
 
 ## 0.16.1
+
 - **Internal fan-out recipe updated for agy 1.0.16** (re-verified per the recipe's own
   "re-verify after upgrades" caveat — which became real within a day): **dynamic custom
   subagents now work** — `define_subagent` a named specialist in-session, then
@@ -1324,6 +1343,7 @@ assertion pass on a broken payload, which has happened in this suite before.
   static agent-config docs drift from behavior, upstream #527).
 
 ## 0.16.0
+
 - **Internal fan-out recipe + `agy-trace`** (community pointer to upstream
   antigravity-cli#105; **verified headless on agy 1.0.12**): agy's `invoke_subagent`
   sandbox only allows TypeNames `self`/`research` — custom TypeNames are rejected. The
@@ -1356,6 +1376,7 @@ assertion pass on a broken payload, which has happened in this suite before.
     no-write without `--yolo`, exit-code/`AGY_SIGNAL` table, tier remaps, updating.
 
 ## 0.15.1
+
 - **Injected routing policy no longer references `$CLAUDE_PLUGIN_ROOT`**
   ([#15](https://github.com/yuting0624/antigravity-for-claude-code/issues/15), fix by
   **@Masterisk-F** in #16): the SessionStart `additionalContext` in
@@ -1374,6 +1395,7 @@ assertion pass on a broken payload, which has happened in this suite before.
   re-synced to 0.15.1.
 
 ## 0.15.0
+
 - **New command — `/antigravity:cloud-run-debug`** (Conductor/Executor demo): diagnose a failing
   Cloud Run service. agy (Gemini) does the bulk, cheap work — pulling `severity>=ERROR` logs via
   `gcloud logging read` and clustering them into a structured digest (error clusters /
@@ -1405,6 +1427,7 @@ assertion pass on a broken payload, which has happened in this suite before.
     permission-denied paths.
 
 ## 0.14.0
+
 - **`bin/` entrypoints — fixes `$CLAUDE_PLUGIN_ROOT` failures on marketplace installs**
   ([#11](https://github.com/yuting0624/antigravity-for-claude-code/issues/11)):
   `$CLAUDE_PLUGIN_ROOT` is only substituted in structured config (hooks/MCP/LSP) and is
@@ -1424,6 +1447,7 @@ assertion pass on a broken payload, which has happened in this suite before.
 - Thanks to **@erszcz** (#10) and **@Masterisk-F** (#11) for the reports.
 
 ## 0.13.0
+
 - **Windows headless hang fixed / diagnosed** ([#6](https://github.com/yuting0624/antigravity-for-claude-code/issues/6)):
   on native Windows without a console (ConPTY), headless `agy -p` / `agy models` could
   hard-hang with a 0-byte log when stdio is redirected.
@@ -1441,6 +1465,7 @@ assertion pass on a broken payload, which has happened in this suite before.
   - Thanks to **@rokushikii** for the detailed, reproducible report.
 
 ## 0.12.0
+
 - **Configurable executor model** (agy is multi-model): tiers still default to Gemini, but
   each is remappable to any `agy models` entry (Claude/GPT on plans that expose them) via
   `tier_flash` / `tier_flash_lo` / `tier_pro`, plus a `default_model` (exact name) option —
@@ -1452,12 +1477,14 @@ assertion pass on a broken payload, which has happened in this suite before.
 - (Reported via Reddit: agy supports Claude/GPT on non-Vertex plans.)
 
 ## 0.11.1
+
 - **WSL slow-mount guard**: `agy-delegate.sh` warns when `--add-dir` targets a Windows
   mount (`/mnt/*`) under WSL — agy reads it over a slow 9p bridge, so even trivial calls
   can take 20s+ — and `doctor` flags a workspace on `/mnt/*`. Fix: keep the repo on the
   WSL Linux filesystem (`~`). Also documented in known-limits. (Reported via Reddit.)
 
 ## 0.11.0
+
 - **Auto-injected routing policy** (`hooks/`): a `SessionStart` hook injects the
   plugin's **cost-aware** routing policy as session context (delegate above the
   break-even, keep Claude's context lean, always verify) so the discipline applies
@@ -1484,6 +1511,7 @@ assertion pass on a broken payload, which has happened in this suite before.
 - **CI**: shellcheck + JSON validation now also cover `hooks/`.
 
 ## 0.10.0
+
 - **Pricing config** (`prices.json`): single source of current Vertex rates (Opus 4.8
   5/25, Sonnet 4.6 3/15, Gemini 3.5 Flash 1.50/9, Gemini 3.1 Pro 2/12). `measure-session.py`
   now prints an estimated **USD** figure; `agy-cost-compare.sh` defaults come from it
@@ -1495,11 +1523,13 @@ assertion pass on a broken payload, which has happened in this suite before.
   validation on every push/PR.
 
 ## 0.9.0
+
 - **Background jobs** (`scripts/agy-job.sh`, codex-style): `start`/`list`/`status`/
   `result`/`cancel`, daemonized worker + per-job registry. Slash commands
   `/antigravity:status|result|cancel`. For interactive sessions; headless stays synchronous.
 
 ## 0.8.0
+
 - **Code-review fixes**: mktemp+trap for stderr (was a fixed `/tmp` path = concurrency
   race); friendly arg validation; content-anchored `usage()`; `--yolo` passthrough +
   div-by-zero guard in cost-compare; `with open` + scope caveat + multi-match warning in
@@ -1508,14 +1538,17 @@ assertion pass on a broken payload, which has happened in this suite before.
   dependency-free `tests/run-tests.sh`.
 
 ## 0.7.x
+
 - Repackaged for public release: sanitized internal identifiers, genericized references,
   MIT `LICENSE`, disclaimer.
 
 ## 0.4.0–0.6.0
+
 - Deep-research recipe; verification gates incl. agy tamper-detection; cost-discipline
   section (break-even, lean context, digest, cache-TTL trap); `measure-session.py`;
   `docs/AB-RESULTS.md` (measured A/B) and `docs/DEMO-KIT.md`.
 
 ## 0.1.0–0.3.0
+
 - Initial plugin: `agy-delegate.sh` wrapper, `antigravity` skill (SDLC model routing,
   conductor/orchestrator), `agy-cost-compare.sh`, marketplace + plugin manifests.

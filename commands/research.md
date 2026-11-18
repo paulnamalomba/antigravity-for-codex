@@ -16,6 +16,7 @@ Input: $ARGUMENTS
 Parse optional `--tier <flash|flash-lo|pro>` (default `flash` for step 2 fan-out search; if passed, use it for step 2, while keeping `pro` for step 3 quote verification unless `--tier` was explicitly set to override all calls) and `--timeout <dur>` (default `15m` for step 2 fan-out search — multi-query web search + URL reads routinely take 3–5 min per call and hit `agy-delegate`'s 5m default, #115; default `10m` for step 3 single-URL verification). If the remaining topic is empty, ask the user what to research (AskUserQuestion) before starting.
 
 Do this:
+
 1. **Plan (you).** Break the topic into 3–6 sub-questions and list the load-bearing claims that must be verified. You own scope and final synthesis.
 2. **Fan-out fetch (agy, one call per sub-question).** On `agy >= 1.4.10`, pass `--read-only --allow-url` (sets `toolPermission: "request-review"`, `permissions.allow: ["read_url(*)"]`, and `permissions.ask: ["write_file(*)", "command(*)"]`, permitting web search and URL reads while keeping file writes and shell commands blocked across both consumer and Gemini Enterprise accounts; on older `agy < 1.4.10` where `--settings` is unavailable, fall back to `--yolo` if URL reads hit exit `15` — covering both the soft deny from 1.1.20+ and 1.1.13's hard error, with `denied_actions` naming `read_url`):
    `agy-delegate --read-only --allow-url --tier <search-tier> --timeout <timeout> "Web-search <sub-question>. Return 5–8 bullet findings, each with the exact source URL and publication date. Output ONLY findings + URLs + dates."`

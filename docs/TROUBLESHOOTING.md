@@ -39,6 +39,7 @@ into a clean **TIMEOUT (exit 12)** instead of a freeze, and `agy-doctor` reports
 hang" instead of the misleading "not authenticated".
 
 **Fix: use WSL** (fully supported):
+
 1. `wsl --install` (one-time; reboot)
 2. Install Claude Code **and** the Antigravity CLI *inside* WSL; authenticate agy there
    (`agy models` should list models)
@@ -99,6 +100,7 @@ wrapper and `agy-doctor` warn when they detect this.
 **Cause:** write tasks need write permission, and headless agy's no-permission behavior
 has changed across versions. **Your workspace stays untouched every time**; what varies is
 whether the run admits it ([#10](https://github.com/yuting0624/antigravity-for-claude-code/issues/10)):
+
 - pre-1.1.0: only *describes* the edits
 - 1.1.0–1.1.2: writes to its **own scratch dir** (`~/.gemini/antigravity-cli/scratch/`)
 - 1.1.3–1.1.1x: **soft-denies** — rc 0, empty stdout, a stderr notice naming the allow-rule
@@ -121,6 +123,7 @@ whether the run admits it ([#10](https://github.com/yuting0624/antigravity-for-c
   grant is denied the same way (`read_url`; the narrow rule is `read_url(<target>)`)
 
 **Fix:**
+
 - **For a file write, add an allow-rule — the narrower fix.** In
   `~/.gemini/antigravity-cli/settings.json`, under `permissions.allow`, add
   `write_file(<dir>)`. It matches **recursively beneath `<dir>`** and needs no flag.
@@ -157,7 +160,7 @@ On classifiable failures the wrapper prints a machine-readable line to stderr:
 `AGY_SIGNAL {"status":"...","reason":"...","model":"...","retry":"..."}`
 
 | exit | meaning | what to do |
-|---|---|---|
+| --- | --- | --- |
 | 0 | success | — |
 | 1 | usage error | check flags (`agy-delegate --help`) |
 | 2 | agy failed (unclassified) | read the stderr it relayed |
@@ -195,17 +198,21 @@ command the task never needed.
 **Symptom:** signing in to `agy` with a Google Workspace account shows only ~6 starter models in `agy models` (`Gemini 3.8 Flash (High/Medium/Low)`, `Claude Sonnet 4.6`, `Claude Opus 4.6`, `GPT-OSS 120B` — no `Gemini 4 Hydrogen`, `Gemini 4 Carbon`, or `Gemini 4 Argon`), even when `~/.gemini/antigravity-cli/settings.json` already configures `"gcp": {"project": "<project>", "location": "global"}` or Google Workspace licenses are assigned.
 
 **Cause** (observed manually on Linux with `agy 1.5.9` by inspecting `antigravity-oauth-token` and CLI logs):
+
 - Choosing **`1. Google OAuth`** during interactive login stores a consumer OAuth token (`"auth_method": "consumer"` in `~/.gemini/antigravity-cli/antigravity-oauth-token`). Observed on `agy 1.5.9`, consumer OAuth ignores `settings.json`'s `"gcp"` block at runtime (it only pre-fills interactive GCP setup prompts), and Google Workspace accounts cannot subscribe to consumer Google One AI Pro / Ultra plans — so they resolve to Antigravity's starter quota regardless of Google Workspace Admin Console licenses (even Workspace AI add-ons do not unlock Gemini 4 on the consumer OAuth path).
 - Unremapped `--tier flash` / `flash-lo` / `pro` delegations continue to run automatically via the 2-layer fallback (`Gemini 3.8 Flash`), while direct access to primary `Gemini 4 Hydrogen`, `Gemini 4 Carbon`, and `Gemini 4 Argon` requires Google Cloud project auth or Vertex AI ADC.
 
 **Fix** (pick either — no Google Workspace Admin Console change needed):
+
 1. **Persistent OAuth login bound to a Google Cloud project (no env vars needed):** run `agy` interactively, run `/logout`, and sign back in selecting **`2. Use a Google Cloud project`** → **`1. Continue with Google Cloud`** → **`2. Pay As You Go`** (bills Vertex AI usage directly to your Google Cloud project; no seat license required) or **`1. Subscriptions`** (if your account holds an active Google Cloud **Gemini Enterprise** license; legacy Gemini Code Assist Standard/Enterprise SKUs do not entitle Antigravity). Confirm your project ID and `global` location — this saves `"auth_method": "gcp"` in `antigravity-oauth-token`.
 2. **Headless / VM / SSH via Vertex AI Application Default Credentials (`AGY_ADC_AUTH=true`):** authenticate ADC (`gcloud auth application-default login`, or attach a VM service account with Vertex AI access) and export in your shell profile (`~/.bashrc` / `~/.zshrc`, or the `"env"` block in `~/.claude/settings.json` for Claude Code):
+
    ```bash
    export AGY_ADC_AUTH=true
    export GOOGLE_CLOUD_PROJECT=<your-gcp-project-id>
    export GOOGLE_CLOUD_LOCATION=global
    ```
+
    Measured manually on Linux with `agy 1.5.9`: `AGY_ADC_AUTH=true` exposes the full 33-model Vertex catalog directly (`Gemini 4 Hydrogen (High/Low/XHigh)`, `Gemini 4 Carbon (High/Medium/Low)`, `Gemini 4 Argon (High/Medium/Low)`), and `~/.cache/antigravity-claude/tier-models-v1.tsv` isolates ADC and OAuth cache keys automatically.
 
 ---

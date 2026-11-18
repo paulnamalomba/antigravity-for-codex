@@ -26,7 +26,7 @@ Claude stays the conductor; the bulk, token-heavy read ran on cheaper Gemini, an
 ## 💡 Why
 
 | | Claude (conductor) | Gemini / `agy` (executor) |
-|---|---|---|
+| --- | --- | --- |
 | **Owns** | requirements · architecture · the hard 20% · **verification** · review | scaffold · implementation · test generation · search |
 | **Strength** | judgement | cheap, fast throughput |
 
@@ -60,7 +60,7 @@ you → Claude Code (conduct: design / verify / review)
 On a **large** ADK multi-agent build (+ `adk eval`), same task / same model, 3 ways:
 
 | | Claude solo @high | solo @max | **hybrid** |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | frontier cost (COST-WEIGHTED) | 2.62M | 5.34M | **1.91M** |
 | quality (`adk eval`) | ✅ 3/3 | ✅ 3/3 | ✅ **3/3** |
 
@@ -84,6 +84,7 @@ deviations: [PR #91](https://github.com/yuting0624/antigravity-for-claude-code/p
 ## 🚀 Install
 
 In Claude Code:
+
 ```
 /plugin marketplace add yuting0624/antigravity-for-claude-code
 /plugin install antigravity@antigravity-for-claude-code
@@ -101,7 +102,7 @@ In Claude Code:
 *The plugin's commands show up natively in Claude Code's `/` menu.*
 
 | command | what it does |
-|---|---|
+| --- | --- |
 | `/antigravity:setup` | health check — `agy` installed + authenticated, scripts ready |
 | `/antigravity:delegate [--tier flash\|flash-lo\|pro] <task>` | delegate a subtask to agy under cost discipline, then verify |
 | `/antigravity:handoff [--dir <repo>] [--tests <files>] <requirement>` | hand a **whole** test-covered task to agy; Claude reads nothing, the wrapper runs the tests, allows one fix-up, and reports — 0.58× a solo run per passing task on the PR-replay benchmark (small tasks: more) |
@@ -129,7 +130,7 @@ by default; `--apply` backs up first and `--uninstall --apply` reverses it. Your
 ```
 
 | your Claude Code asset | becomes |
-|---|---|
+| --- | --- |
 | `~/.claude/skills/` | read **in place** — a `skills.json` entry, not a copy, so one edit serves both tools |
 | installed plugins | `~/.gemini/config/plugins/` via the native importer, with its output repaired |
 | `CLAUDE.md` | an `AGENTS.md` symlink beside it |
@@ -206,7 +207,7 @@ ID=$(scripts/agy-job.sh start --tier pro --dir . "big task"); scripts/agy-job.sh
 ```
 
 | tier | model | use for |
-|------|-------|---------|
+| ------ | ------- | --------- |
 | `flash` (default) | Gemini 4 Hydrogen (High) | most bulk work (~2.5× faster agentic throughput) |
 | `flash-lo` (`lite`) | Gemini 4 Hydrogen (Low) | cheapest, low-latency tasks |
 | `pro` | Gemini 4 Carbon (High) | harder coding / reasoning / cross-checks |
@@ -245,6 +246,7 @@ Delegation doesn't save money by itself — these do (also in the skill):
 > **Something broken?** See **[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)** — symptom-first fixes for Windows/WSL, writes that silently don't happen, quota/auth/timeout codes, and updating.
 
 **Guardrails**
+
 - Always **verify** agy's output (it can be wrong, and may even alter its environment to make a check pass — re-run gates yourself in a clean state).
 - `--yolo` auto-approves every tool call — a grant over your whole machine, not over `--dir`.
   **`--sandbox` does not contain it.** Measured on macOS with agy 1.1.19: with `--yolo`, `--sandbox` changed nothing — a write to an absolute path OUTSIDE `--dir` succeeded (rc 0), `id` ran and returned a real uid, and `curl https://example.com` returned 200. agy's own help says "terminal restrictions"; whatever it restricts, it is not those, and not in this combination. Not tested on Linux. Use a throwaway checkout, or a
@@ -252,6 +254,7 @@ Delegation doesn't save money by itself — these do (also in the skill):
 - Write tasks: run on a dedicated branch/worktree, review the diff before merging.
 
 **Known limits (agy v1.0.x)**
+
 - `-p`/`--print` **takes the prompt as its value** and must come last — the wrapper handles this.
 - `--print` drops stdout on a non-TTY unless stdin is detached (handled via `< /dev/null` up to 64 KB, or via a rewindable temp file `< "$PROMPTF"` without `-p` above 64 KB to avoid Linux `E2BIG`; measured on `agy 1.4.8` and `1.5.9` with `--output-format json`). **Structured output arrived in agy 1.1.8** (`--output-format json`): the wrapper now uses it internally on ≥1.1.8 to classify failures from the structured error and to report the executor's real token usage (incl. `cache_read`) as an `AGY_USAGE` line on stderr — stdout is unchanged. Since 0.28.0 that line also names the **model** that ran and the **tier** it was picked from (empty for an explicit `--model`), plus agy's own `duration_seconds` / `num_turns` (1.2.x; 0 on older agy), so a usage log prices itself per tier. Older agy falls back to plain text (toggle with the `structured_output` option). **If you're measuring, set `AGY_USAGE_LOG=/path`** (or the `usage_log` option): stderr is easily lost — `2>&1 | tail -N`, the natural way to keep Claude's context lean, keeps the digest and drops the usage line.
 - **Pipe hang and empty-output semantics moved upstream.** agy 1.1.24 fixed the cause of the issue-#37 hang (its MCP children kept the caller's pipes open); the wrapper keeps routing agy's output through files, which costs nothing and still covers older builds. Since agy 1.1.18 a dropped agent stream exits non-zero instead of rc 0 + empty, so the wrapper's exit `3` now means agy genuinely returned nothing (from agy's changelog; not reproduced here).
@@ -312,12 +315,14 @@ prices.json       Vertex rate config (verify before quoting)
 ```
 
 **Local development** (hack on the plugin — loads live files, `$CLAUDE_PLUGIN_ROOT` resolves):
+
 ```bash
 git clone https://github.com/yuting0624/antigravity-for-claude-code ~/antigravity-for-claude-code
 claude --plugin-dir ~/antigravity-for-claude-code
 ```
 
 **Tests** (no dependencies; stubs `agy`):
+
 ```bash
 bash tests/run-tests.sh
 ```

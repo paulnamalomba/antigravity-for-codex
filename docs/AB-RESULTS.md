@@ -16,7 +16,7 @@ headless `claude -p`, pinned session ids. Solo arms vary only `--effort`; the hy
 the plugin + delegation. **All three passed `adk eval` 3/3 — equal quality.**
 
 | Metric (Claude side) | solo @ high | solo @ max | **hybrid (Claude+agy)** |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | output | 123,216 | 388,676 | **113,351** |
 | cache_read | 10,188,140 | 20,453,600 | **5,654,552** |
 | turns | 126 | 154 | **87** |

@@ -121,5 +121,5 @@ The wrapper exits non-zero and prints an `AGY_SIGNAL {...}` line on failure:
 - `10` quota / rate limit → report it; suggest the caller retry later with `--continue`.
 - `11` auth required → tell the caller to run `agy` once interactively to sign in.
 - `12` timeout → suggest a larger `--timeout` or a narrower task.
-- `13` agy missing → report the install step (https://antigravity.google/docs/cli-using).
+- `13` agy missing → report the install step (<https://antigravity.google/docs/cli-using>).
 - `2` generic agy failure · `3` empty output → report the stderr and suggest `--tier pro` or a sharper spec.

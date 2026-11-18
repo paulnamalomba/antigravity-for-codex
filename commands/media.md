@@ -16,9 +16,11 @@ Do this:
 
 2. **Delegate** (the engine handles format pre-flight, the digest contract, and writes the
    full transcript to a file):
+
    ```
    agy-media <file> [focus] [--convert] [--tier pro|flash] [--timeout 20m] [--out <path>]
    ```
+
    - Default tier is `pro` (better timestamps/diarization); `--tier flash` is fine for
      short/simple clips.
    - Long media needs headroom: raise `--timeout` (e.g. `20m`) for anything over a few

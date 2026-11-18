@@ -80,7 +80,7 @@ scripts/measure-session.py <session-id>
 ## 3. Apply levers, one at a time (ROI order)
 
 | # | Lever | Why it works |
-|---|---|---|
+| --- | --- | --- |
 | 1 | `--dir <repo>` — agy reads the repo itself | stops pasting context into the conductor |
 | 2 | `--digest` — ingest digests, never dumps | the single biggest lever; collapses `cache_read` |
 | 3 | Batch: one big delegation over many round-trips | fewer turns = fewer context re-reads |
@@ -140,7 +140,7 @@ Every one of these cost us a rerun. Getting any of them wrong does not add noise
 produces a **confident wrong number**.
 
 | condition | why |
-|---|---|
+| --- | --- |
 | **every trial cold** — 1 trial = 1 job, ≥5 min between | the prompt cache TTL is 5 min. On short tasks the *cache draw* is bigger than the arm difference: our "+46%" headline became "indistinguishable" once we forced cold, because one arm had happened to draw 2 warm starts and the other 1 |
 | **identical wall-clock and budget caps on both arms** | a cap on one arm is a second variable |
 | **executor usage to a file, not stderr** | set `AGY_USAGE_LOG=/path` (plugin ≥ 0.22.0; ≥ 0.28.0 each line also names `model` and `tier`, so a mixed-tier log prices itself). A conductor keeping its context lean writes `2>&1 \| tail -N`, and the usage line is precisely what `tail` drops — we lost most of a run's executor data that way |
@@ -158,7 +158,7 @@ than baseline; excluding it, 42.1%. Neither number is wrong — the *metric* was
 ### Fields
 
 | field | note |
-|---|---|
+| --- | --- |
 | task type / arm / lever set | one lever difference between arms |
 | gate result (pass/fail) | the denominator of cost-of-pass; must be machine-checkable |
 | delegations this trial | 0 means you measured the baseline twice |
@@ -172,7 +172,7 @@ than baseline; excluding it, 42.1%. Neither number is wrong — the *metric* was
 Merging them is the easiest way to be badly wrong, in either direction:
 
 | | Claude / Harbor | agy / Gemini |
-|---|---|---|
+| --- | --- | --- |
 | total | `n_input = input + cache_creation + cache_read` | `total = input + output` (`thinking` is inside `output`) |
 | cached reads | `n_cache_tokens = cache_read`, an **inner subset** of the input total | `cache_read` is a **separate counter** — not in `total`, not a subset of `input` |
 
