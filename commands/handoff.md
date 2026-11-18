@@ -20,6 +20,7 @@ unasked-for options) and about 0.2 below the human-merged PR — so the result g
 human review a first draft would get, **after** the tests are green, not from you.
 
 Do this:
+
 1. **Decide whether to hand off at all.** Hand off when the task is a coherent feature or
    change of roughly 200+ lines with tests that define "done" (existing tests that must
    pass, or tests you write first). Do not hand off a small edit, a judgement call, or
@@ -32,11 +33,13 @@ Do this:
    for a digest first (`agy-delegate --digest --dir . "…"`), or write the tests, but do not
    open source files yourself.
 3. **Run it from a clean tree, on a branch**, synchronously if you are headless:
+
    ```
    agy-handoff --dir . --tests <test files> - <<'REQ'
    <the requirement>
    REQ
    ```
+
    `--verify` is detected from `go.mod` / `package.json` / `Cargo.toml` / `pyproject.toml`
    / `Makefile`; pass it explicitly when the repository's gate is something else. Expect
    **20–120 minutes** for a real feature. In an **interactive** session, Claude Code's

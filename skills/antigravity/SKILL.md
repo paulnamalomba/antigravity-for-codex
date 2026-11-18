@@ -38,7 +38,7 @@ the model — routing, shared rules, verification gates — not raw generation.
 Route each phase to the right model. This is the core policy.
 
 | SDLC phase | Owner | Why |
-|---|---|---|
+| --- | --- | --- |
 | Requirements & planning | **Claude** | ambiguity, human-paced judgement |
 | Design & architecture | **Claude** | trade-offs; most human-centric |
 | Implementation — complex / architecture-bearing (the 20%) | **Claude** | correctness, deep context |
@@ -58,6 +58,7 @@ Routing tier within agy: `flash` (default, bulk: **Gemini 4 Hydrogen (High)**) �
 model `agy models` lists (Claude / GPT on plans that expose them) — via `--model <exact name>` (and optional `--effort low|medium|high|xhigh|max`),
 or persistently with the `default_model` / `tier_*` plugin options (in `~/.claude/settings.json`
 `pluginConfigs` or env `CLAUDE_PLUGIN_OPTION_*`). Since 0.31.0, `pro` defaults to **Gemini 4 Carbon (High)** (strongest coding/agentic reasoning), and `flash` / `flash-lo` (`lite`) default to **Gemini 4 Hydrogen (High)** / **(Low)** (~2.5× faster agentic throughput, with `(XHigh)` reasoning effort available via `--effort xhigh`) — measured manually on Linux with `agy 1.5.9` via Vertex AI ADC (`AGY_ADC_AUTH=true`) across `Hydrogen (High/Low/XHigh)`, `Carbon (High/Medium)`, and `Argon (High)`. When `tier_pro`, `tier_flash`, or `tier_flash_lo` is **unremapped** and the active plan does not expose the primary Gemini 4 model (for example Google AI Pro without Carbon/Hydrogen, Free-tier accounts, or Google Workspace accounts signed in via consumer `1. Google OAuth` instead of `2. Use a Google Cloud project` / `AGY_ADC_AUTH=true` — see `docs/TROUBLESHOOTING.md`), `agy-delegate` resolves an entitled fallback in **two layers**:
+
 1. **Layer 1 (`Available models:` 1-hop Cold-Miss Jump):** when `agy 1.5.x` rejects a model with an `Available models:` list (measured on `agy 1.5.9`), `agy-delegate` intersects its ordered fallback chain (`pro`: Carbon → Argon → `Gemini 3.1 Pro` → `Gemini 3.1 Pro (High)` → `Gemini 3.1 Pro (Low)` → Hydrogen → `Gemini 3.8 Flash (High)`; `flash`: Hydrogen → `Gemini 3.8 Flash (High)` → `Gemini 3.7 Flash (High)` → `Gemini 3.6 Flash (High)` → `Gemini 3.5 Flash`; `flash-lo`: Hydrogen Low → `Gemini 3.8 Flash (Low)` → `Gemini 3.5 Flash Lite` → `Gemini 3.7 Flash (Low)` → `Gemini 3.1 Flash Lite`) with that list and jumps directly to the first entitled candidate in a **single retry** (or exits `14` immediately with zero extra spawns if none match; on older `agy` without `Available models:`, it walks the chain sequentially).
 2. **Layer 2 (`tier-models-v1.tsv` 6h Warm Cache):** resolved fallbacks (and `agy-doctor` pre-seeds) are cached for 6 hours in `~/.cache/antigravity-claude/tier-models-v1.tsv` keyed on `(agy binary path + stat, OAuth token presence bit, settings.json & onboarding.json POSIX cksum content signatures, auth env, tier)` — immune to `agy 1.5.9`'s per-invocation `onboarding.json` `mtime` rewrites (measured on `1.5.9`) and OAuth token refreshes — so subsequent calls hit the entitled model on attempt #1 with zero cold-miss delay.
 Check `AGY_USAGE.model` on stderr for the model that actually ran. The retry fires only on agy's model-unavailable error, never after a timeout (a timed-out attempt exits 12). Keep the executor a
@@ -100,6 +101,7 @@ the cross-model verification value (Claude executing Claude loses both).
 ```bash
 agy-delegate [options] "the task prompt"
 ```
+
 Options: `--tier flash|flash-lo|lite|pro|argon|flash-38` · `--effort low|medium|high|xhigh|max` (rewrites `(Effort)` on display names, or passes `--effort` for effortless slugs/custom models) · `--dir <path>` / `--add-dir <path>` (workspace, repeatable) ·
 `--timeout 10m` · `--read-only` (and `--allow-url`: on agy ≥ 1.4.10 synthesizes `--settings` with `request-review`, `permissions.allow: []` — or `["read_url(*)"]` with `--allow-url` — and `permissions.ask: ["write_file(*)", "command(*)"]` so workspace `read_file` stays allowed while writes and shell commands are denied across both consumer and Gemini Enterprise accounts without `--yolo`) · `--settings <json|path>` · `--json-schema <json|path>` (forwards `--json-schema` and serializes `.structured_output` when `.response` is empty) · `--yolo` (auto-approve **ALL** tools — the blunt grant; needed for Vertex AI Search / terminal / subagent spawning, and on agy < 1.4.10 for web search / URL reads (agy 1.1.28+; or a `read_url(<target>)` rule) and for writes not covered by a `permissions.allow` rule. For a
 file write the narrower grant is usually a `write_file(<dir>)` entry in
@@ -183,6 +185,7 @@ context).
 ## Verification gates (non-negotiable)
 
 Claude owns correctness. For anything that ships:
+
 1. **Define the contract first** — Claude writes/owns the tests and evals; they tell
    agy what "correct" means more precisely than prose.
 2. **Output eval = actually run it, don't stop at reading the code.** Reading the diff
@@ -224,6 +227,7 @@ If wrong: retry on `--tier pro`, sharpen the spec, or do that piece yourself.
 
 Read-only work (search, review, analysis) is low-risk. **When agy writes files or runs
 commands** (`--yolo` grants write + terminal):
+
 - **Write tasks need a grant — and it does not have to be `--yolo`.** Headless agy's no-permission behavior has shifted
   every few releases — describe-only (pre-1.1.0), scratch-divert (1.1.0–1.1.2), soft-deny
   with a stderr notice (1.1.3+), **hard error by 1.1.13**, soft again from **1.1.20**
@@ -262,7 +266,7 @@ with the PR's tests restored before scoring, Claude Opus 5 as the conductor in e
 n = 2–3 per cell, blinded two-family review (2026-09, measured on `agy 1.2.2` only; PR #91).
 
 | configuration | cost per passing task vs solo Opus 5 | tests | blinded review (5 = best) |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Claude reads, specifies, agy writes file by file | **1.33–1.68×** | equal | 3.7–3.8 vs 4.0 |
 | Claude reads nothing; whole task to agy; tests decide (`agy-handoff`) | **0.58×** (large ≥700 lines **0.43×**; small <100 lines **1.20×**) | 16/16 | 3.4 vs 4.0 (human-merged PR: 3.7) |
 | same, plus agy reviewing its own diff against a checklist | 0.67× | 15/16 | 3.5 |
@@ -482,6 +486,7 @@ agy-delegate --dir . --yolo --digest --timeout 10m \
 ```
 
 Verified behaviors (1.0.12 → 1.1.5):
+
 - **Pass `--yolo`.** On 1.1.3+ the subagent tools need permission that headless mode
   can't prompt for, so without `--yolo` the spawn is denied (wrapper exit 15). Whether
   it is a soft deny or the hard error 1.1.13 introduced for writes (and 1.1.20 took
@@ -527,18 +532,22 @@ unverified.**
    claims to verify. Claude owns scope and final synthesis.
 2. **Fan-out fetch (agy, cheap, parallel).** One call per sub-question; force compact
    stdout so bulky pages stay in Gemini's context, not Claude's (on `agy < 1.4.10` where `--settings` is absent, replace `--read-only --allow-url` with `--yolo` or a `read_url(<target>)` rule so URL reads don't hit exit 15):
+
    ```bash
    "$ROOT" --tier flash --timeout 15m --read-only --allow-url \
      "Use web search for <sub-question>. Return 5-8 bullet findings, each with the
       exact source URL and publication date. Output ONLY findings+URLs+dates."
    ```
+
 3. **Deepen on key sources (agy).** For each load-bearing claim, name the URL and make
    agy quote the supporting text (turns domain-level citations into verifiable quotes):
+
    ```bash
    "$ROOT" --tier pro --timeout 10m --read-only --allow-url \
      "Open <URL> and quote the exact sentence(s) supporting: '<claim>'.
       If the page does not support it, reply NOT SUPPORTED."
    ```
+
 4. **Adversarial verify (Claude).** Corroborate each key claim across ≥2 independent
    domains; treat any single/vague/domain-only citation as unverified; sanity-check
    dates; watch for Gemini parametric knowledge masquerading as a sourced fact.
@@ -553,6 +562,7 @@ distilled to bullets+URLs before reaching Claude — use `agy-cost-compare` to s
 ## What Antigravity brings that Claude lacks natively
 
 Built-in Google tools (MCP), verified working in headless `--print` mode:
+
 - **Google / web search** — current, grounded info.
 - **Vertex AI Search** — search internal/company data stores (`list_engines`,
   `search`, `conversational_search`).
@@ -565,9 +575,11 @@ Read-only web/URL tools work with `--read-only --allow-url` on `agy ≥ 1.4.10`;
 Routing deterministic, high-volume work to Gemini 4 Hydrogen (`flash` tier, ≪ Claude per token) is
 **intelligent model routing**: higher CapEx (this harness) for lower OpEx (cheap model
 does the bulk). Use the cost demo as observability:
+
 ```bash
 agy-cost-compare --tier flash "the task prompt"
 ```
+
 Uses exact `AGY_USAGE` token counts (`input`, `output`, and additive `cache_read`) on `agy ≥ 1.1.8`, falling back to `chars/4` estimates on older plain-text runs. Set real Vertex rates in `prices.json` or
 via `CLAUDE_IN_PER_M`, `CLAUDE_OUT_PER_M`, `GEMINI_IN_PER_M`, `GEMINI_OUT_PER_M`.
 

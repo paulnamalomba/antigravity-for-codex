@@ -1,5 +1,9 @@
 # A/B results — the measured cost story
 
+> **Historical Claude archive:** This document preserves the upstream Claude workflow and findings. For the Codex adaptation, see [AB-RESULTS.md](../codex/AB-RESULTS.md).
+
+> **Upstream Research & Attribution Notice:** These empirical benchmark results and economic analyses were measured and established by upstream author [linyuting](https://github.com/yuting0624) in the original [`antigravity-for-claude-code`](https://github.com/yuting0624/antigravity-for-claude-code) project. They document the foundational cost-reduction thesis for dual-core conductor/executor workflows and serve as the baseline for the `antigravity-for-codex` port.
+
 > **Headline:** on a real, scaled build the hybrid (Claude conducts, Gemini executes)
 > cut frontier-model spend **~27% vs solo Claude @ high effort and ~64% vs @ max**, at
 > **equal quality** (same `adk eval` gate) — and the cheap Gemini work isn't even counted.
@@ -7,6 +11,8 @@
 COST-WEIGHTED = a model-agnostic $-proxy: `output×5 + input×1 + cache_write×1.25 +
 cache_read×0.1` (standard Claude multipliers). Claude-side tokens are exact (from session
 transcripts); agy/Gemini tokens are on the cheaper deck and priced separately.
+
+> **Reading the archived claims:** The table measures a Claude-side weighted proxy and omits the Gemini executor cost. Adding a positive executor cost reduces the apparent total-cost advantage; the archived assertion below that it makes the advantage larger is incorrect. The common 3/3 gate does not establish equal quality in every respect. With one trial per arm, these figures do not establish total-cost savings or a general break-even. They are not Codex results.
 
 ## Test 2 — LARGE task (the win): build a multi-agent ADK SDLC system + `adk eval`
 
@@ -16,7 +22,7 @@ headless `claude -p`, pinned session ids. Solo arms vary only `--effort`; the hy
 the plugin + delegation. **All three passed `adk eval` 3/3 — equal quality.**
 
 | Metric (Claude side) | solo @ high | solo @ max | **hybrid (Claude+agy)** |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | output | 123,216 | 388,676 | **113,351** |
 | cache_read | 10,188,140 | 20,453,600 | **5,654,552** |
 | turns | 126 | 154 | **87** |

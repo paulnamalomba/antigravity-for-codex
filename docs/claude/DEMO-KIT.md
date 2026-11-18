@@ -1,5 +1,9 @@
 # Demo kit — Experiment B (scaled build): "Image #2" SDLC multi-agent on ADK
 
+> **Historical Claude archive:** This document preserves the upstream Claude workflow and findings. For the Codex adaptation, see [DEMO-KIT.md](../codex/DEMO-KIT.md).
+
+> **Upstream Attribution Notice:** This evaluation methodology, benchmark harness, and experimental design were created by upstream author [linyuting](https://github.com/yuting0624) for [`antigravity-for-claude-code`](https://github.com/yuting0624/antigravity-for-claude-code). Paths referencing `/Users/linyuting/antigravity-for-claude-code` represent the original upstream test environment; for runs on `antigravity-for-codex`, adapt paths to your local workspace directory (`/Users/kabwe/Development/antigravity-for-codex`).
+
 Goal: BUILD the Image-#2 architecture (an SDLC Expert Agent that turns a feature brief
 into 要件定義 → 基本設計 → 詳細設計, each web-grounded), **deploy to Agent Engine**, and
 measure 3 arms to test whether the hybrid wins on cost **at this larger scale** (it lost
@@ -14,6 +18,7 @@ host-specific traps below are real.
 ## 0. One-time setup (do before any arm)
 
 **Install ADK (host pip/uv point at a corp registry that 403s — bypass to PyPI, use 3.12):**
+
 ```bash
 mkdir -p ~/expB
 uv venv ~/expB/.venv312 --python 3.12
@@ -24,6 +29,7 @@ uv pip install --python ~/expB/.venv312/bin/python --default-index https://pypi.
 ```
 
 **Verify deploy prereqs (don't discover these mid-demo):**
+
 ```bash
 gcloud services enable aiplatform.googleapis.com --project YOUR_PROJECT
 gcloud storage buckets create gs://YOUR_PROJECT-adk-staging --location=us-central1 || true  # optional; CLI deploy doesn't need a flag
@@ -98,8 +104,10 @@ remote = agent_engines.create(
     extra_packages=["sdlc_agent"], env_vars={"GOOGLE_GENAI_USE_VERTEXAI": "TRUE"})
 print(remote.resource_name)
 ```
+
 Query the deployed agent: `agent_engines.get(<resource>).stream_query(user_id="u", message="<brief>")`.
 DELETE when done (billable): `agent_engines.get(<resource>).delete(force=True)`.
+
 ```
 
 ---
@@ -113,26 +121,35 @@ A1=$(uuidgen); A2=$(uuidgen); A3=$(uuidgen); echo "$A1 $A2 $A3"   # save these
 ```
 
 **Arm 1 — SOLO @ high** (plugin OFF):
+
 ```bash
 mkdir -p ~/expB/solo-high && git -C ~/expB/solo-high init -q && cd ~/expB/solo-high
 claude --model 'claude-opus-4-8[1m]' --effort high --session-id "$A1"
 ```
+
 Paste: `[§1 spec]` prepended with: `Build everything YOURSELF. Do NOT delegate to any other agent/tool.`
 
 **Arm 2 — SOLO @ max (ultracode)** (plugin OFF, identical prompt, only effort differs):
+
 ```bash
 mkdir -p ~/expB/solo-max && git -C ~/expB/solo-max init -q && cd ~/expB/solo-max
 claude --model 'claude-opus-4-8[1m]' --effort max --session-id "$A2"
 ```
+
 Paste: the EXACT SAME prompt as Arm 1, verbatim.
 
 **Arm 3 — HYBRID** (plugin ON; conductor @ high to match Arm 1):
+
 ```bash
 mkdir -p ~/expB/hybrid && git -C ~/expB/hybrid init -q && cd ~/expB/hybrid
-claude --plugin-dir /Users/linyuting/antigravity-for-claude-code \
+# Substitute your local repository path (e.g. /Users/kabwe/Development/antigravity-for-codex)
+# (Original upstream benchmark used: --plugin-dir /Users/linyuting/antigravity-for-claude-code)
+claude --plugin-dir "${ANTIGRAVITY_PLUGIN_DIR:-$HOME/antigravity-for-codex}" \
   --model 'claude-opus-4-8[1m]' --effort high --session-id "$A3"
 ```
+
 Paste: `[§1 spec]` prepended with:
+
 ```
 Use the 'antigravity' plugin. YOU conduct (architecture, AGENTS.md/SPEC contract, the eval
 contract, verification + adk eval + deploy). DELEGATE to agy: the ADK API web-research and
@@ -146,11 +163,12 @@ delegation (single long wait, no keep-warm busy turns); review git diff only.
 ## 3. Measure (after all three finish)
 
 ```bash
-cd ~/antigravity-for-claude-code
+cd "${ANTIGRAVITY_PLUGIN_DIR:-$HOME/antigravity-for-codex}" # Upstream baseline: cd ~/antigravity-for-claude-code
 python3 scripts/measure-session.py "$A1" "B/ solo@high"
 python3 scripts/measure-session.py "$A2" "B/ solo@max"
 python3 scripts/measure-session.py "$A3" "B/ hybrid"
 ```
+
 Also for the hybrid arm, price the **Gemini side** (not in measure-session.py):
 `scripts/agy-cost-compare.sh` gives the per-token gap (chars/4 estimate; set real Vertex
 rates first). Report a both-decks note.
@@ -160,6 +178,7 @@ turns, wall-clock, and QUALITY (adk eval pass rate, deploy success + resource na
 deployed-agent returns 3 ordered artifacts).
 
 **Success (hybrid wins at scale, flipping the small-task result) IFF BOTH:**
+
 1. COST: hybrid COST-WEIGHTED < solo@high COST-WEIGHTED, **and**
 2. QUALITY: hybrid ≥ solo (passes every eval case + trajectory + deploys + answers).
 
@@ -172,6 +191,7 @@ Fill the Test 2 table in `AB-RESULTS.md` with the three rows.
 ---
 
 ## Honest framing for the result
+
 - If hybrid COST-WEIGHTED < solo@high here, that is the **defensible** sales claim:
   "above this task size, the hybrid cuts frontier spend by N% at equal quality — here's
   the data and the break-even." Not the slide's flat 8×/46%.

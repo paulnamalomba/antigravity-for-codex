@@ -8,7 +8,7 @@ security reports are genuinely appreciated.
 
 **Preferred:** use GitHub's private vulnerability reporting —
 **Security → Report a vulnerability** on this repository
-(https://github.com/yuting0624/antigravity-for-claude-code/security/advisories/new).
+(<https://github.com/yuting0624/antigravity-for-claude-code/security/advisories/new>).
 This keeps details private until a fix is available.
 
 If that isn't available to you, open a normal issue describing the impact and a
@@ -39,7 +39,7 @@ do), and a **non-destructive** proof-of-concept (exit codes / policy decisions, 
 ## Not in scope
 
 - Vulnerabilities in the upstream Antigravity CLI (`agy`) itself — report those to
-  https://github.com/google-antigravity/antigravity-cli.
+  <https://github.com/google-antigravity/antigravity-cli>.
 - Cost/quota surprises from using `--yolo` or delegating large jobs (documented behavior).
 
 ## Supported versions

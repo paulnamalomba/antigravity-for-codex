@@ -1,5 +1,9 @@
 # PoC Playbook — measuring hybrid delegation in your org
 
+> **Historical Claude archive:** This document preserves the upstream Claude workflow and findings. For the Codex adaptation, see [POC-PLAYBOOK.md](../codex/POC-PLAYBOOK.md).
+
+> **Upstream Research & Attribution Notice:** This proof-of-concept playbook and measurement methodology was authored by [linyuting](https://github.com/yuting0624) for [`antigravity-for-claude-code`](https://github.com/yuting0624/antigravity-for-claude-code). Historical issues and pull requests cited throughout (e.g., upstream `#10`, upstream `#37`) reference empirical findings established in the upstream repository.
+
 A step-by-step method for running a **defensible** proof-of-concept of the hybrid
 (Claude conducts, agy/Gemini executes) on your own codebase — one that produces numbers
 you can put in front of decision-makers. It distills what we learned producing
@@ -73,14 +77,14 @@ Run the representative task with solo Claude, pinned session ID, then:
 scripts/measure-session.py <session-id>
 ```
 
-- **Verify [`prices.json`](../prices.json) against your real Vertex rates first** —
+- **Verify [`prices.json`](../../prices.json) against your real Vertex rates first** —
   otherwise the USD figure is fiction.
 - Record: turns · output · `cache_read` · COST-WEIGHTED · est. USD · gate result.
 
 ## 3. Apply levers, one at a time (ROI order)
 
 | # | Lever | Why it works |
-|---|---|---|
+| --- | --- | --- |
 | 1 | `--dir <repo>` — agy reads the repo itself | stops pasting context into the conductor |
 | 2 | `--digest` — ingest digests, never dumps | the single biggest lever; collapses `cache_read` |
 | 3 | Batch: one big delegation over many round-trips | fewer turns = fewer context re-reads |
@@ -99,7 +103,7 @@ After each lever: rerun the task → rerun the gate → keep only if quality hel
   scratch-divert 1.1.0–1.1.2 · soft-deny 1.1.3+ · hard error by 1.1.13 · soft again from
   1.1.20, measured on 1.1.25). An ungranted write
   **leaves your workspace untouched every time**; what varies is whether the run admits it
-  ([#10](https://github.com/yuting0624/antigravity-for-claude-code/issues/10)). Two things
+  ([upstream #10](https://github.com/yuting0624/antigravity-for-claude-code/issues/10)). Two things
   grant it:
   
   - **`permissions.allow` in `~/.gemini/antigravity-cli/settings.json`** — a
@@ -119,15 +123,14 @@ After each lever: rerun the task → rerun the gate → keep only if quality hel
     terminal tools. Since agy 1.1.27 the wrapper names the refused tool from the envelope's
     `denied_actions` (measured on 1.2.0).
   
-  Confirmed on **agy 1.1.9** by a controlled A/B ([#37](https://github.com/yuting0624/antigravity-for-claude-code/issues/37)):
+  Confirmed on **agy 1.1.9** by a controlled A/B ([upstream #37](https://github.com/yuting0624/antigravity-for-claude-code/issues/37)):
   a covered target wrote with no flag; an uncovered one came back `PERMISSION_DENIED` with
   the rule as the only variable. agy's own denial text names the rule and offers `--yolo` as
   the alternative. Not verified on other versions, and a glob form (`write_file(/path/**)`)
   was reported *not* to match. Either way: run write tasks on a branch and verify with
   `git status`; the wrapper maps both denial shapes — the soft one (agy 1.1.3+, and again
   from 1.1.20; re-measured on 1.1.25) and 1.1.13's hard error — to exit `15`.
-- **One shared [`AGENTS.md`](https://github.com/yuting0624/antigravity-for-claude-code#-what-it-does)
-  at the repo root** — the biggest first-pass-success factor, which means fewer retries,
+- **One shared [`AGENTS.md`](https://github.com/paulnamalomba/antigravity-for-codex#-what-it-does) ([upstream docs](https://github.com/yuting0624/antigravity-for-claude-code#-what-it-does)) at the repo root** — the biggest first-pass-success factor, which means fewer retries,
   which means fewer conductor turns.
 - Long write tasks exceed the ~2-min sync Bash limit → background job (`agy-job`).
 - Full symptom-first list: [`TROUBLESHOOTING.md`](TROUBLESHOOTING.md).
@@ -140,7 +143,7 @@ Every one of these cost us a rerun. Getting any of them wrong does not add noise
 produces a **confident wrong number**.
 
 | condition | why |
-|---|---|
+| --- | --- |
 | **every trial cold** — 1 trial = 1 job, ≥5 min between | the prompt cache TTL is 5 min. On short tasks the *cache draw* is bigger than the arm difference: our "+46%" headline became "indistinguishable" once we forced cold, because one arm had happened to draw 2 warm starts and the other 1 |
 | **identical wall-clock and budget caps on both arms** | a cap on one arm is a second variable |
 | **executor usage to a file, not stderr** | set `AGY_USAGE_LOG=/path` (plugin ≥ 0.22.0; ≥ 0.28.0 each line also names `model` and `tier`, so a mixed-tier log prices itself). A conductor keeping its context lean writes `2>&1 \| tail -N`, and the usage line is precisely what `tail` drops — we lost most of a run's executor data that way |
@@ -158,7 +161,7 @@ than baseline; excluding it, 42.1%. Neither number is wrong — the *metric* was
 ### Fields
 
 | field | note |
-|---|---|
+| --- | --- |
 | task type / arm / lever set | one lever difference between arms |
 | gate result (pass/fail) | the denominator of cost-of-pass; must be machine-checkable |
 | delegations this trial | 0 means you measured the baseline twice |
@@ -172,7 +175,7 @@ than baseline; excluding it, 42.1%. Neither number is wrong — the *metric* was
 Merging them is the easiest way to be badly wrong, in either direction:
 
 | | Claude / Harbor | agy / Gemini |
-|---|---|---|
+| --- | --- | --- |
 | total | `n_input = input + cache_creation + cache_read` | `total = input + output` (`thinking` is inside `output`) |
 | cached reads | `n_cache_tokens = cache_read`, an **inner subset** of the input total | `cache_read` is a **separate counter** — not in `total`, not a subset of `input` |
 
@@ -202,7 +205,7 @@ come from delegation. In enforcement-strength order:
    (e.g. Claude apps gateway on GCP — caps return HTTP 429 at the limit). CLAUDE.md asks;
    gateways enforce. A spend cap also nudges delegation *without* dictating model choice.
 4. **Windows fleets:** native Windows headless delegation is not supported upstream
-   (hard-hang without a console — antigravity-cli#508). **Require WSL2** for
+   (hard-hang without a console — [google-antigravity/antigravity-cli#508](https://github.com/google-antigravity/antigravity-cli/issues/508)). **Require WSL2** for
    participating Windows developers, with the repo on the WSL Linux filesystem
    (`~/...`, never `/mnt/c/...`).
 
