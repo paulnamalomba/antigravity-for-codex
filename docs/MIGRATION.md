@@ -1,5 +1,7 @@
 # Claude Code → Antigravity CLI: layout reference and compatibility matrix
 
+> **Upstream Technical Reference Notice:** This comprehensive layout reference and reverse-engineered compatibility matrix was researched and documented by upstream author [linyuting](https://github.com/yuting0624) in [`antigravity-for-claude-code`](https://github.com/yuting0624/antigravity-for-claude-code). It serves as technical reference for configuration migration and runtime behaviors across Claude Code and Antigravity CLI.
+
 Reference material behind `agy-migrate` / the `migrate-to-antigravity` skill.
 Everything below was measured against **Claude Code 2.1.229** and **agy 1.1.12** on
 macOS, not read off documentation — several of the behaviours contradict the docs, and

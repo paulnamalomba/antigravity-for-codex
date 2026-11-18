@@ -1,7 +1,8 @@
 # Research & Migration Blueprint: Porting Antigravity to Codex CLI
 
 > **Target Workspace:** `/Users/kabwe/Development/antigravity-for-codex`  
-> **Source Repository:** `antigravity-for-claude-code` (Forked from `https://github.com/yuting0624/antigravity-for-claude-code`, branch `main`)  
+> **Target Repository:** `https://github.com/paulnamalomba/antigravity-for-codex` (Port Maintainer: Paul Namalomba)  
+> **Upstream Repository:** `https://github.com/yuting0624/antigravity-for-claude-code` (Original Author: linyuting / @yuting0624)  
 > **Target Runtime:** Codex CLI (`0.170.0+`) & Antigravity CLI (`agy 1.5.11+`)  
 > **Document Status:** Complete Implementation Specification  
 
@@ -16,7 +17,23 @@ Porting this architecture to **Codex CLI** unlocks an even more powerful combina
 - **Codex CLI as the Conductor/Synthesizer:** Codex excels at local tool execution, terminal orchestration, project-level repository understanding, and complex software specification.
 - **Antigravity (`agy` / Gemini) as the Research & Execution Engine:** Antigravity provides massive context windows (up to 2M tokens), native Google Search / Vertex AI grounding, multi-model flexibility (Gemini 4 Hydrogen/Carbon/Argon), and high-throughput agentic execution at a fraction of the token cost.
 
-### Core Architecture Shift
+### 1.1 Open Source Provenance, Ethics & Attribution
+
+This project (`antigravity-for-codex`) is an open-source port of the foundational [`antigravity-for-claude-code`](https://github.com/yuting0624/antigravity-for-claude-code) project created and architected by **linyuting** ([@yuting0624](https://github.com/yuting0624)).
+
+- **MIT License Compliance & Copyright Retention:**  
+  The upstream codebase is released under the permissive MIT License (`Copyright (c) 2026 linyuting`). In strict adherence to open-source governance:
+  - The upstream copyright notice and permission notice are preserved unmodified in [`LICENSE`](../LICENSE) and recognized in all public manifests.
+  - Codex-specific adaptations, skills, documentation, and tooling carry downstream maintainer attribution (`Copyright (c) 2026 Paul Namalomba`).
+  - See [`docs/PROVENANCE.md`](PROVENANCE.md) for full lineage documentation and remote sync procedures.
+- **Upstream Relationship & Tracking:**  
+  The upstream repository is tracked as a dedicated git remote (`upstream https://github.com/yuting0624/antigravity-for-claude-code.git`). Upstream innovations—including core CLI process supervision, wall-clock timeout safety guards, pricing matrix updates, and multi-model routing heuristics—are systematically monitored, cherry-picked, and respected.
+- **Historical References:**  
+  Historical issue numbers, bug reports, and pull requests originating in Claude Code (e.g., issues `#6`, `#10`, `#11`, `#15`, `#37`, `#115`, `#117`) are explicitly designated as *upstream references* to avoid confusing them with Codex-specific tracking. New issues and contributions for the Codex CLI port are filed at [`paulnamalomba/antigravity-for-codex/issues`](https://github.com/paulnamalomba/antigravity-for-codex/issues).
+- **Engineering Ethics:**  
+  Open source thrives when attribution is clear, generous, and transparent. We celebrate linyuting's foundational work that demonstrated how dual-core agentic routing cuts token expenditure by 27% to 64% while maintaining rigorous conductor verification.
+
+### 1.2 Core Architecture Shift
 
 In Claude Code, extensions interact through slash commands (`commands/*.md`), lifecycle hooks (`hooks/hooks.json`), and Claude-specific environment variables (`CLAUDE_PLUGIN_ROOT`, `CLAUDE_PLUGIN_OPTION_*`).
 
@@ -62,23 +79,35 @@ Create `.codex-plugin/plugin.json`:
   "version": "0.31.1",
   "description": "Run the Antigravity CLI (Gemini) as a collaborating AI inside Codex CLI, with intelligent model routing across the SDLC. Codex conducts — requirements, architecture, deep reasoning, verification — and routes high-volume work (grounded web research, scaffolding, tests, first-pass review, migrations) to Antigravity.",
   "author": {
+    "name": "Paul Namalomba",
+    "url": "https://github.com/paulnamalomba/antigravity-for-codex"
+  },
+  "maintainers": [
+    {
+      "name": "Paul Namalomba",
+      "url": "https://github.com/paulnamalomba/antigravity-for-codex",
+      "role": "Codex Port Maintainer"
+    }
+  ],
+  "upstream": {
     "name": "linyuting",
-    "url": "https://github.com/yuting0624/antigravity-for-claude-code"
+    "repository": "https://github.com/yuting0624/antigravity-for-claude-code",
+    "role": "Original Author & Architect (antigravity-for-claude-code)"
   },
   "interface": {
     "displayName": "Antigravity",
     "shortDescription": "Grounded deep research, reasoning, and multi-model SDLC delegation.",
-    "longDescription": "Intelligent model routing for Codex CLI. Keep judgement-heavy architecture and verification on Codex, while routing high-volume scaffolding, test generation, and multi-source web/grounded research to Antigravity (Gemini). Includes cost tracking, automated claim verification, and background jobs.",
-    "developerName": "linyuting",
+    "longDescription": "Intelligent model routing for Codex CLI. Ported and maintained by Paul Namalomba, based on the original antigravity-for-claude-code by linyuting (@yuting0624). Keep judgement-heavy architecture and verification on Codex, while routing high-volume scaffolding, test generation, and multi-source web/grounded research to Antigravity (Gemini). Includes cost tracking, automated claim verification, and background jobs.",
+    "developerName": "Paul Namalomba",
     "category": "Developer Tools",
     "capabilities": [
       "Interactive",
       "Write",
       "Read"
     ],
-    "websiteURL": "https://antigravity.google/docs/cli-using",
-    "privacyPolicyURL": "https://github.com/yuting0624/antigravity-for-claude-code/blob/main/PRIVACY.md",
-    "termsOfServiceURL": "https://github.com/yuting0624/antigravity-for-claude-code/blob/main/TERMS.md",
+    "websiteURL": "https://github.com/paulnamalomba/antigravity-for-codex",
+    "privacyPolicyURL": "https://github.com/paulnamalomba/antigravity-for-codex/blob/main/PRIVACY.md",
+    "termsOfServiceURL": "https://github.com/paulnamalomba/antigravity-for-codex/blob/main/TERMS.md",
     "defaultPrompt": [
       "Deep research a topic using Antigravity web search",
       "Delegate boilerplate or test generation to Gemini",

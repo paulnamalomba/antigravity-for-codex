@@ -1,5 +1,7 @@
 # Troubleshooting
 
+> **Upstream Attribution Notice:** This troubleshooting guide was compiled from empirical testing and issue resolutions originally reported in [`antigravity-for-claude-code`](https://github.com/yuting0624/antigravity-for-claude-code) by [linyuting](https://github.com/yuting0624) and community contributors. Issue references (e.g., `upstream #6`, `upstream #37`) link to historical upstream investigations. New issues regarding the Codex port should be filed at [`paulnamalomba/antigravity-for-codex`](https://github.com/paulnamalomba/antigravity-for-codex/issues).
+
 Symptom-first guide to every problem reported so far. **Start by running `agy-doctor`**
 (or `/antigravity:setup` inside Claude Code) — it diagnoses most of the below and prints
 the plugin version, agy version/auth state, and platform warnings.
@@ -10,8 +12,8 @@ the plugin version, agy version/auth state, and platform warnings.
 
 **Cause:** you're on a plugin version < 0.14.0. `$CLAUDE_PLUGIN_ROOT` is only substituted
 inside structured config (hooks/MCP) — it is **not** exported to the shell commands the
-model runs, so marketplace installs saw an empty path ([#11](https://github.com/yuting0624/antigravity-for-claude-code/issues/11),
-[#15](https://github.com/yuting0624/antigravity-for-claude-code/issues/15)).
+model runs, so marketplace installs saw an empty path ([upstream #11](https://github.com/yuting0624/antigravity-for-claude-code/issues/11),
+[upstream #15](https://github.com/yuting0624/antigravity-for-claude-code/issues/15)).
 
 **Fix:** update — since 0.14.0 everything is invoked by bare names (`agy-delegate`,
 `agy-handoff`, `agy-job`, `agy-doctor`, `agy-cost-compare`) on the plugin's `bin/` PATH:
@@ -28,7 +30,7 @@ model runs, so marketplace installs saw an empty path ([#11](https://github.com/
 **Cause (upstream, not the plugin):** on native Windows, headless `agy` needs a real
 console (ConPTY). When the plugin runs it as a child process with redirected stdio there
 is no console, and agy v1.0.x can hard-hang before producing any output
-([#6](https://github.com/yuting0624/antigravity-for-claude-code/issues/6)).
+([upstream #6](https://github.com/yuting0624/antigravity-for-claude-code/issues/6)).
 
 **"But agy works when I type it in my terminal!"** — yes: typed directly, agy has a real
 console (interactive mode). Invoked by the plugin, it runs headless (no console). That's
@@ -55,7 +57,7 @@ unauthenticated CLI — but typing `agy models` yourself works fine. macOS and L
 Windows.
 
 **Cause:** you have **stdio MCP servers configured** and a plugin build older than 0.22.1
-([#37](https://github.com/yuting0624/antigravity-for-claude-code/issues/37)). agy's stdio MCP
+([upstream #37](https://github.com/yuting0624/antigravity-for-claude-code/issues/37)). agy's stdio MCP
 children **inherit its stdout and outlive agy**. A shell command substitution only returns
 once *every* holder of the pipe's write end closes it, so `OUT="$(agy ...)"` waits forever on
 children that are still alive. The wall-clock guard cannot rescue this: `timeout` kills
@@ -99,7 +101,7 @@ wrapper and `agy-doctor` warn when they detect this.
 
 **Cause:** write tasks need write permission, and headless agy's no-permission behavior
 has changed across versions. **Your workspace stays untouched every time**; what varies is
-whether the run admits it ([#10](https://github.com/yuting0624/antigravity-for-claude-code/issues/10)):
+whether the run admits it ([upstream #10](https://github.com/yuting0624/antigravity-for-claude-code/issues/10)):
 
 - pre-1.1.0: only *describes* the edits
 - 1.1.0–1.1.2: writes to its **own scratch dir** (`~/.gemini/antigravity-cli/scratch/`)
@@ -128,7 +130,7 @@ whether the run admits it ([#10](https://github.com/yuting0624/antigravity-for-c
   `~/.gemini/antigravity-cli/settings.json`, under `permissions.allow`, add
   `write_file(<dir>)`. It matches **recursively beneath `<dir>`** and needs no flag.
   This is the rule agy's own denial message is naming. Confirmed on agy 1.1.9 by a
-  controlled A/B ([#37](https://github.com/yuting0624/antigravity-for-claude-code/issues/37));
+  controlled A/B ([upstream #37](https://github.com/yuting0624/antigravity-for-claude-code/issues/37));
   a glob form (`write_file(/path/**)`) was reported *not* to match.
   **Substitute a real path for `<dir>`** — and if the rule is in place and the write is
   *still* denied, suspect the rule before suspecting agy. An entry agy cannot parse
@@ -150,7 +152,7 @@ whether the run admits it ([#10](https://github.com/yuting0624/antigravity-for-c
   an actionable message instead of a bare "empty output" or "agy exited 1".
 - Long write tasks can exceed Claude Code's ~2-min synchronous Bash limit → run them as a
   background job: `ID=$(agy-job start --tier pro --dir . "<task>")`, then
-  `/antigravity:status`, `/antigravity:result <id>`, or `/antigravity:cancel <id>` (since 0.31.1, `agy-job cancel` terminates the full descendant process tree — measured live on Linux, CI-tested with stubs on macOS `/bin/bash 3.2`, and stub-tested for Windows Git Bash `ps -e` + `taskkill /T /F` from [#117](https://github.com/yuting0624/antigravity-for-claude-code/issues/117); `SIGSTOP` parent-freeze against hand-off respawn and `ps -p` PID-reuse checks apply on POSIX and degrade to top-down `taskkill /T /F` + `kill -0` on Git Bash/BusyBox — and records `state=cancelled`; `agy-job result` exits `2` while running and exits `0` once finished or cancelled, printing `[exit rc=...]` or `[cancelled]` on stderr; interactive sessions only).
+  `/antigravity:status`, `/antigravity:result <id>`, or `/antigravity:cancel <id>` (since 0.31.1, `agy-job cancel` terminates the full descendant process tree — measured live on Linux, CI-tested with stubs on macOS `/bin/bash 3.2`, and stub-tested for Windows Git Bash `ps -e` + `taskkill /T /F` from [upstream #117](https://github.com/yuting0624/antigravity-for-claude-code/issues/117); `SIGSTOP` parent-freeze against hand-off respawn and `ps -p` PID-reuse checks apply on POSIX and degrade to top-down `taskkill /T /F` + `kill -0` on Git Bash/BusyBox — and records `state=cancelled`; `agy-job result` exits `2` while running and exits `0` once finished or cancelled, printing `[exit rc=...]` or `[cancelled]` on stderr; interactive sessions only).
 
 ---
 
@@ -254,6 +256,8 @@ version bumps — see [CHANGELOG.md](../CHANGELOG.md).
 
 ## Still stuck?
 
-[Open a bug report](https://github.com/yuting0624/antigravity-for-claude-code/issues/new/choose)
+[Open a bug report](https://github.com/paulnamalomba/antigravity-for-codex/issues/new/choose)
 — the template asks for your `agy-doctor` output, OS, and install method, which is
 usually everything needed to diagnose in one round-trip.
+
+*(For issues specific to the original Claude Code upstream plugin, see the [upstream issue tracker](https://github.com/yuting0624/antigravity-for-claude-code/issues)).*

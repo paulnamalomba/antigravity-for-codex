@@ -1,5 +1,7 @@
 # Demo kit — Experiment B (scaled build): "Image #2" SDLC multi-agent on ADK
 
+> **Upstream Attribution Notice:** This evaluation methodology, benchmark harness, and experimental design were created by upstream author [linyuting](https://github.com/yuting0624) for [`antigravity-for-claude-code`](https://github.com/yuting0624/antigravity-for-claude-code). Paths referencing `/Users/linyuting/antigravity-for-claude-code` represent the original upstream test environment; for runs on `antigravity-for-codex`, adapt paths to your local workspace directory (`/Users/kabwe/Development/antigravity-for-codex`).
+
 Goal: BUILD the Image-#2 architecture (an SDLC Expert Agent that turns a feature brief
 into 要件定義 → 基本設計 → 詳細設計, each web-grounded), **deploy to Agent Engine**, and
 measure 3 arms to test whether the hybrid wins on cost **at this larger scale** (it lost
@@ -138,7 +140,9 @@ Paste: the EXACT SAME prompt as Arm 1, verbatim.
 
 ```bash
 mkdir -p ~/expB/hybrid && git -C ~/expB/hybrid init -q && cd ~/expB/hybrid
-claude --plugin-dir /Users/linyuting/antigravity-for-claude-code \
+# Substitute your local repository path (e.g. /Users/kabwe/Development/antigravity-for-codex)
+# (Original upstream benchmark used: --plugin-dir /Users/linyuting/antigravity-for-claude-code)
+claude --plugin-dir "${ANTIGRAVITY_PLUGIN_DIR:-$HOME/antigravity-for-codex}" \
   --model 'claude-opus-4-8[1m]' --effort high --session-id "$A3"
 ```
 
@@ -157,7 +161,7 @@ delegation (single long wait, no keep-warm busy turns); review git diff only.
 ## 3. Measure (after all three finish)
 
 ```bash
-cd ~/antigravity-for-claude-code
+cd "${ANTIGRAVITY_PLUGIN_DIR:-$HOME/antigravity-for-codex}" # Upstream baseline: cd ~/antigravity-for-claude-code
 python3 scripts/measure-session.py "$A1" "B/ solo@high"
 python3 scripts/measure-session.py "$A2" "B/ solo@max"
 python3 scripts/measure-session.py "$A3" "B/ hybrid"

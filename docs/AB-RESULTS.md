@@ -1,5 +1,7 @@
 # A/B results — the measured cost story
 
+> **Upstream Research & Attribution Notice:** These empirical benchmark results and economic analyses were measured and established by upstream author [linyuting](https://github.com/yuting0624) in the original [`antigravity-for-claude-code`](https://github.com/yuting0624/antigravity-for-claude-code) project. They document the foundational cost-reduction thesis for dual-core conductor/executor workflows and serve as the baseline for the `antigravity-for-codex` port.
+
 > **Headline:** on a real, scaled build the hybrid (Claude conducts, Gemini executes)
 > cut frontier-model spend **~27% vs solo Claude @ high effort and ~64% vs @ max**, at
 > **equal quality** (same `adk eval` gate) — and the cheap Gemini work isn't even counted.
