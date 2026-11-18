@@ -1054,6 +1054,9 @@ for groups in hooks.values():
 PY
 check "hooks.json shape valid (SessionStart + UserPromptSubmit)" 0 "$rc"
 
+python3 "$HERE/test-codex-hooks.py"; rc=$?
+check "Codex hook contracts and scoped delegation guard" 0 "$rc"
+
 # nudge-delegation (UserPromptSubmit): advisory material only — never a mandate
 NUDGE="$HOOKS/nudge-delegation.sh"
 out=$(printf '%s' '{"prompt":"migrate every caller from APIv1 to APIv2 across the codebase"}' | "$NUDGE" 2>/dev/null); rc=$?
@@ -1369,7 +1372,7 @@ echo "== --sandbox is not sold as containment =="
 # exempted a bad sentence sitting beside a good one, because the neighbour's negation
 # satisfied the window. check-sandbox-claims.py judges SENTENCES, so each claim carries
 # its own negation or none.
-if python3 "$HERE/check-sandbox-claims.py" "$ROOT"/README.md "$ROOT"/docs/*.md \
+if python3 "$HERE/check-sandbox-claims.py" "$ROOT"/README.md "$ROOT"/docs/claude/*.md "$ROOT"/docs/codex/*.md \
      "$ROOT"/skills/*/SKILL.md "$ROOT"/agents/*.md "$ROOT"/commands/*.md \
      "$ROOT"/scripts/*.sh "$ROOT"/hooks/*.sh; then
   echo "ok: nothing recommends --sandbox as containment"; PASS=$((PASS+1));
@@ -1706,7 +1709,7 @@ e15_bad=""
 # diagnostic without describing what produces it, and demanding the taxonomy there is
 # noise in a line someone reads while fixing a rule. CHANGELOG.md is out because its older
 # entries describe what was true when they were written.
-E15_SURFACES="$(cd "$ROOT" && ls -1 README.md docs/*.md skills/*/SKILL.md agents/*.md \
+E15_SURFACES="$(cd "$ROOT" && ls -1 README.md docs/claude/*.md docs/codex/*.md skills/*/SKILL.md agents/*.md \
                   commands/*.md scripts/*.sh hooks/*.sh 2>/dev/null \
                 | grep -vE '^(CHANGELOG\.md|scripts/doctor\.sh)$')"
 for f in $E15_SURFACES; do
@@ -1730,7 +1733,7 @@ done
 # what actually happened: the --help text kept selling it while the same file's runtime
 # message retracted it three hundred lines away. Verified against the tree: no legitimate
 # line pairs these words today.
-ae_bad="$(grep -rniE 'accept-edits' "$ROOT"/README.md "$ROOT"/docs/*.md "$ROOT"/skills \
+ae_bad="$(grep -rniE 'accept-edits' "$ROOT"/README.md "$ROOT"/docs/claude/*.md "$ROOT"/docs/codex/*.md "$ROOT"/skills \
             "$ROOT"/agents "$ROOT"/commands "$ROOT"/scripts 2>/dev/null \
           | grep -iE 'safer|auto-appl' | sed "s|$ROOT/||" | cut -d: -f1-2 | tr '\n' ' ')"
 if [ -z "$ae_bad" ]; then
@@ -3033,6 +3036,14 @@ MDIR2="$TMP/media-scoped"; mkdir -p "$MDIR2"
 SPECIAL_WAV="$MDIR2/my \"quoted\" clip.wav"
 STILL_PNG="$MDIR2/test.png"
 : > "$SPECIAL_WAV"; : > "$STILL_PNG"
+# Codex can require scoped permissions rather than taking the legacy --yolo fallback.
+media_required=$(STUB_SETTINGS_CAPABLE=0 "$MEDIA" --require-scoped "$SPECIAL_WAV" 2>&1); rc_required=$?
+check "media requires scoped permissions when unavailable" 1 "$rc_required" "refusing the broad --yolo fallback" "$media_required"
+media_required=$(STUB_SETTINGS_CAPABLE=1 "$MEDIA" --require-scoped --print-command "$SPECIAL_WAV" 2>"$TMP/media-required.err"); rc_required=$?
+check "media require-scoped permits supported agy" 0 "$rc_required" "--settings" "$media_required"
+if has '--yolo' "$media_required"; then
+  echo "FAIL: media require-scoped passed --yolo"; FAIL=$((FAIL+1));
+else echo "ok: media require-scoped does not pass --yolo"; PASS=$((PASS+1)); fi
 media_cmd=$(STUB_SETTINGS_CAPABLE=1 "$MEDIA" --print-command "$SPECIAL_WAV" 2>"$TMP/m-scoped.err"); rc=$?
 media_err="$(cat "$TMP/m-scoped.err")"
 check "agy-media on agy >= 1.4.10 passes --add-dir + --settings" 0 "$rc" "--settings" "$media_cmd"
