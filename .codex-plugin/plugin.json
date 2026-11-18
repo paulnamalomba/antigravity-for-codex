@@ -1,0 +1,30 @@
+{
+  "name": "antigravity",
+  "version": "0.31.2",
+  "description": "Antigravity CLI delegation for Codex. Maintained by Paul Namalomba; based on antigravity-for-claude-code by linyuting (yuting0624).",
+  "author": {
+    "name": "Paul Namalomba",
+    "url": "https://github.com/paulnamalomba/antigravity-for-codex"
+  },
+  "interface": {
+    "displayName": "Antigravity for Codex",
+    "shortDescription": "Delegate research and development tasks to Antigravity.",
+    "longDescription": "Run Antigravity CLI workflows from Codex. Maintained by Paul Namalomba; based on the original antigravity-for-claude-code by linyuting (yuting0624).",
+    "developerName": "Paul Namalomba",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Interactive",
+      "Write",
+      "Read"
+    ],
+    "websiteURL": "https://github.com/paulnamalomba/antigravity-for-codex",
+    "defaultPrompt": [
+      "Check the Antigravity setup for Codex",
+      "List Antigravity jobs for this directory",
+      "Delegate a bounded research task to Antigravity"
+    ]
+  },
+  "skills": "./codex/skills/",
+  "commands": [],
+  "hooks": "./hooks/codex-hooks.json"
+}
