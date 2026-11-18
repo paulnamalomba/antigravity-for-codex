@@ -1,5 +1,7 @@
 # PoC Playbook — measuring hybrid delegation in your org
 
+> **Historical Claude archive:** This document preserves the upstream Claude workflow and findings. For the Codex adaptation, see [POC-PLAYBOOK.md](../codex/POC-PLAYBOOK.md).
+
 > **Upstream Research & Attribution Notice:** This proof-of-concept playbook and measurement methodology was authored by [linyuting](https://github.com/yuting0624) for [`antigravity-for-claude-code`](https://github.com/yuting0624/antigravity-for-claude-code). Historical issues and pull requests cited throughout (e.g., upstream `#10`, upstream `#37`) reference empirical findings established in the upstream repository.
 
 A step-by-step method for running a **defensible** proof-of-concept of the hybrid
@@ -75,7 +77,7 @@ Run the representative task with solo Claude, pinned session ID, then:
 scripts/measure-session.py <session-id>
 ```
 
-- **Verify [`prices.json`](../prices.json) against your real Vertex rates first** —
+- **Verify [`prices.json`](../../prices.json) against your real Vertex rates first** —
   otherwise the USD figure is fiction.
 - Record: turns · output · `cache_read` · COST-WEIGHTED · est. USD · gate result.
 

@@ -1,5 +1,7 @@
 # A/B results — the measured cost story
 
+> **Historical Claude archive:** This document preserves the upstream Claude workflow and findings. For the Codex adaptation, see [AB-RESULTS.md](../codex/AB-RESULTS.md).
+
 > **Upstream Research & Attribution Notice:** These empirical benchmark results and economic analyses were measured and established by upstream author [linyuting](https://github.com/yuting0624) in the original [`antigravity-for-claude-code`](https://github.com/yuting0624/antigravity-for-claude-code) project. They document the foundational cost-reduction thesis for dual-core conductor/executor workflows and serve as the baseline for the `antigravity-for-codex` port.
 
 > **Headline:** on a real, scaled build the hybrid (Claude conducts, Gemini executes)
@@ -9,6 +11,8 @@
 COST-WEIGHTED = a model-agnostic $-proxy: `output×5 + input×1 + cache_write×1.25 +
 cache_read×0.1` (standard Claude multipliers). Claude-side tokens are exact (from session
 transcripts); agy/Gemini tokens are on the cheaper deck and priced separately.
+
+> **Reading the archived claims:** The table measures a Claude-side weighted proxy and omits the Gemini executor cost. Adding a positive executor cost reduces the apparent total-cost advantage; the archived assertion below that it makes the advantage larger is incorrect. The common 3/3 gate does not establish equal quality in every respect. With one trial per arm, these figures do not establish total-cost savings or a general break-even. They are not Codex results.
 
 ## Test 2 — LARGE task (the win): build a multi-agent ADK SDLC system + `adk eval`
 

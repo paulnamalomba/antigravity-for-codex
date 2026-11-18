@@ -1,5 +1,7 @@
 # Project Provenance, Lineage & Attribution Guide
 
+> **Archive:** This is the historical Claude-focused document as committed in the repository. Its runtime assumptions and commands may be outdated. For current Codex guidance, see [PROVENANCE.md](../codex/PROVENANCE.md).
+
 > **Repository:** `https://github.com/paulnamalomba/antigravity-for-codex`  
 > **Downstream Port Maintainer:** Paul Namalomba ([@paulnamalomba](https://github.com/paulnamalomba))  
 > **Upstream Project:** [`antigravity-for-claude-code`](https://github.com/yuting0624/antigravity-for-claude-code)  
@@ -29,7 +31,7 @@ The MIT license grants broad permissions to use, copy, modify, merge, publish, d
 
 ### 2.2 Dual-Copyright Retention
 In accordance with section 1 of the MIT license:
-- The original copyright notice belonging to **linyuting** is preserved unmodified in the root [`LICENSE`](../LICENSE) file and throughout the project documentation:
+- The original copyright notice belonging to **linyuting** is preserved unmodified in the root [`LICENSE`](../../LICENSE) file and throughout the project documentation:
   ```text
   Copyright (c) 2026 linyuting
   ```
@@ -48,6 +50,8 @@ The plugin manifest specification for Codex CLI (`.codex-plugin/plugin.json`) ex
 ---
 
 ## 3. Git Remote & Upstream Syncing Conventions
+
+> **Historical and deferred:** The instructions below were retained as part of the original document. Upstream synchronization is deferred, the `upstream/main` assumption is stale, and these commands are not part of the Codex workflow. Do not follow them as current setup instructions. See [current provenance](../codex/PROVENANCE.md).
 
 To maintain synchronization with upstream improvements, bug fixes, and compatibility updates, every local clone of this repository should configure both `origin` (downstream port) and `upstream` (original repository) remotes.
 

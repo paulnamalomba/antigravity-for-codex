@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to **Antigravity for Claude Code**. Format loosely follows
+Historical upstream changes to **Antigravity for Claude Code**; issue and PR numbers below refer to the upstream repository unless otherwise stated. These entries do not establish Codex-port releases or validation. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/); versions are in `.claude-plugin/plugin.json`.
 
 ## 0.31.1

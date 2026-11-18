@@ -1,5 +1,7 @@
 # Claude Code → Antigravity CLI: layout reference and compatibility matrix
 
+> **Archive:** This is the historical Claude-focused document as committed in the repository. Its runtime assumptions and commands may be outdated. For current Codex guidance, see [MIGRATION.md](../codex/MIGRATION.md).
+
 > **Upstream Technical Reference Notice:** This comprehensive layout reference and reverse-engineered compatibility matrix was researched and documented by upstream author [linyuting](https://github.com/yuting0624) in [`antigravity-for-claude-code`](https://github.com/yuting0624/antigravity-for-claude-code). It serves as technical reference for configuration migration and runtime behaviors across Claude Code and Antigravity CLI.
 
 Reference material behind `agy-migrate` / the `migrate-to-antigravity` skill.

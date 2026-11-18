@@ -1,5 +1,7 @@
 # Troubleshooting
 
+> **Archive:** This is the historical Claude-focused document as committed in the repository. Its runtime assumptions and commands may be outdated. For current Codex guidance, see [TROUBLESHOOTING.md](../codex/TROUBLESHOOTING.md).
+
 > **Upstream Attribution Notice:** This troubleshooting guide was compiled from empirical testing and issue resolutions originally reported in [`antigravity-for-claude-code`](https://github.com/yuting0624/antigravity-for-claude-code) by [linyuting](https://github.com/yuting0624) and community contributors. Issue references (e.g., `upstream #6`, `upstream #37`) link to historical upstream investigations. New issues regarding the Codex port should be filed at [`paulnamalomba/antigravity-for-codex`](https://github.com/paulnamalomba/antigravity-for-codex/issues).
 
 Symptom-first guide to every problem reported so far. **Start by running `agy-doctor`**
@@ -250,7 +252,7 @@ Third-party marketplace plugins do **not** auto-update by default:
 ```
 
 `agy-doctor` prints the installed plugin version (last line of its checks). Fixes land as
-version bumps — see [CHANGELOG.md](../CHANGELOG.md).
+version bumps — see [CHANGELOG.md](../../CHANGELOG.md).
 
 ---
 

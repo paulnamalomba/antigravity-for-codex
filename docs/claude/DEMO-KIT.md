@@ -1,5 +1,7 @@
 # Demo kit — Experiment B (scaled build): "Image #2" SDLC multi-agent on ADK
 
+> **Historical Claude archive:** This document preserves the upstream Claude workflow and findings. For the Codex adaptation, see [DEMO-KIT.md](../codex/DEMO-KIT.md).
+
 > **Upstream Attribution Notice:** This evaluation methodology, benchmark harness, and experimental design were created by upstream author [linyuting](https://github.com/yuting0624) for [`antigravity-for-claude-code`](https://github.com/yuting0624/antigravity-for-claude-code). Paths referencing `/Users/linyuting/antigravity-for-claude-code` represent the original upstream test environment; for runs on `antigravity-for-codex`, adapt paths to your local workspace directory (`/Users/kabwe/Development/antigravity-for-codex`).
 
 Goal: BUILD the Image-#2 architecture (an SDLC Expert Agent that turns a feature brief
