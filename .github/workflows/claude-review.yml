@@ -72,7 +72,7 @@ jobs:
               extra scrutiny for bypasses and for false positives on legitimate prompts.
             - **Exit-code / signal contract**: codes 2,3,10,11,12,13,14,15 and the
               `AGY_SIGNAL` / `AGY_USAGE` lines must stay consistent across
-              `agy-delegate.sh`, `agy-job.sh`, SKILL.md and docs/TROUBLESHOOTING.md.
+              `agy-delegate.sh`, `agy-job.sh`, SKILL.md and docs/claude/TROUBLESHOOTING.md.
             - **Docs accuracy**: this repo tracks a fast-moving upstream CLI. Flag any
               claim about agy behavior that the diff contradicts, and any version
               drift between `.claude-plugin/plugin.json` and `skills/antigravity/SKILL.md`.
@@ -94,8 +94,8 @@ jobs:
               to true. Note that local verification with a developer's `gh` session
               cannot surface either — say so rather than assuming it was tested.
             - **Doc drift across more than the file in the diff.** A behavioural claim
-              lives in `README.md`, `SKILL.md`, `docs/POC-PLAYBOOK.md`,
-              `docs/TROUBLESHOOTING.md`, `commands/*.md`, `agents/*.md` *and* in runtime
+              lives in `README.md`, `SKILL.md`, `docs/claude/POC-PLAYBOOK.md`,
+              `docs/claude/TROUBLESHOOTING.md`, `commands/*.md`, `agents/*.md` *and* in runtime
               strings in `scripts/*.sh`. Changing one is usually wrong. Grep for the
               claim, not for the file.
             - **A claim the diff does not back.** Statements in the PR description or in
