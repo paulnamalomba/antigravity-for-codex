@@ -1,0 +1,6 @@
+{
+  "name": "antigravity-for-codex",
+  "plugins": [
+    {"name": "antigravity", "source": "./"}
+  ]
+}
