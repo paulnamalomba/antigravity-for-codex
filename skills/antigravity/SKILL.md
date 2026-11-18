@@ -49,7 +49,7 @@ Route each phase to the right model. This is the core policy.
 | Maintenance / migration / modernization | **agy** executes, **Claude** directs | tedious, systematic |
 | Web / Vertex AI Search | **agy** → **Claude** re-checks | tools Claude lacks natively |
 | Audio / video understanding | **agy** transcribes + digests · **Claude** verifies | Gemini is natively multimodal; no local ffmpeg/speech stack |
-| Deep research (multi-source) | **agy** fans out search/fetch · **Claude** plans, verifies ≥2 sources, synthesizes | offload bulky pages to cheap Gemini; frontier model judges |
+| Deep research (multi-source) | **agy** retrieves candidate evidence · **Claude** plans, checks primary sources, and synthesizes | keep retrieval and verification independent |
 
 Routing tier within agy: `flash` (default, bulk: **Gemini 4 Hydrogen (High)**) · `flash-lo` / `lite` (cheapest, low-latency: **Gemini 4 Hydrogen (Low)**) ·
 `pro` (harder coding / reasoning / reviews / cross-checks: **Gemini 4 Carbon (High)**) · plus convenience aliases `argon` (**Gemini 4 Argon (High)**) and `flash-38` (**Gemini 3.8 Flash (High)**).
@@ -57,7 +57,7 @@ Routing tier within agy: `flash` (default, bulk: **Gemini 4 Hydrogen (High)**) �
 **agy is multi-model.** Tiers map to Gemini 4 by default, but you can point delegation at any
 model `agy models` lists (Claude / GPT on plans that expose them) — via `--model <exact name>` (and optional `--effort low|medium|high|xhigh|max`),
 or persistently with the `default_model` / `tier_*` plugin options (in `~/.claude/settings.json`
-`pluginConfigs` or env `CLAUDE_PLUGIN_OPTION_*`). Since 0.31.0, `pro` defaults to **Gemini 4 Carbon (High)** (strongest coding/agentic reasoning), and `flash` / `flash-lo` (`lite`) default to **Gemini 4 Hydrogen (High)** / **(Low)** (~2.5× faster agentic throughput, with `(XHigh)` reasoning effort available via `--effort xhigh`) — measured manually on Linux with `agy 1.5.9` via Vertex AI ADC (`AGY_ADC_AUTH=true`) across `Hydrogen (High/Low/XHigh)`, `Carbon (High/Medium)`, and `Argon (High)`. When `tier_pro`, `tier_flash`, or `tier_flash_lo` is **unremapped** and the active plan does not expose the primary Gemini 4 model (for example Google AI Pro without Carbon/Hydrogen, Free-tier accounts, or Google Workspace accounts signed in via consumer `1. Google OAuth` instead of `2. Use a Google Cloud project` / `AGY_ADC_AUTH=true` — see `docs/TROUBLESHOOTING.md`), `agy-delegate` resolves an entitled fallback in **two layers**:
+`pluginConfigs` or env `CLAUDE_PLUGIN_OPTION_*`). Since 0.31.0, `pro` defaults to **Gemini 4 Carbon (High)** (strongest coding/agentic reasoning), and `flash` / `flash-lo` (`lite`) default to **Gemini 4 Hydrogen (High)** / **(Low)** (~2.5× faster agentic throughput, with `(XHigh)` reasoning effort available via `--effort xhigh`) — measured manually on Linux with `agy 1.5.9` via Vertex AI ADC (`AGY_ADC_AUTH=true`) across `Hydrogen (High/Low/XHigh)`, `Carbon (High/Medium)`, and `Argon (High)`. When `tier_pro`, `tier_flash`, or `tier_flash_lo` is **unremapped** and the active plan does not expose the primary Gemini 4 model (for example Google AI Pro without Carbon/Hydrogen, Free-tier accounts, or Google Workspace accounts signed in via consumer `1. Google OAuth` instead of `2. Use a Google Cloud project` / `AGY_ADC_AUTH=true` — see `docs/claude/TROUBLESHOOTING.md`), `agy-delegate` resolves an entitled fallback in **two layers**:
 
 1. **Layer 1 (`Available models:` 1-hop Cold-Miss Jump):** when `agy 1.5.x` rejects a model with an `Available models:` list (measured on `agy 1.5.9`), `agy-delegate` intersects its ordered fallback chain (`pro`: Carbon → Argon → `Gemini 3.1 Pro` → `Gemini 3.1 Pro (High)` → `Gemini 3.1 Pro (Low)` → Hydrogen → `Gemini 3.8 Flash (High)`; `flash`: Hydrogen → `Gemini 3.8 Flash (High)` → `Gemini 3.7 Flash (High)` → `Gemini 3.6 Flash (High)` → `Gemini 3.5 Flash`; `flash-lo`: Hydrogen Low → `Gemini 3.8 Flash (Low)` → `Gemini 3.5 Flash Lite` → `Gemini 3.7 Flash (Low)` → `Gemini 3.1 Flash Lite`) with that list and jumps directly to the first entitled candidate in a **single retry** (or exits `14` immediately with zero extra spawns if none match; on older `agy` without `Available models:`, it walks the chain sequentially).
 2. **Layer 2 (`tier-models-v1.tsv` 6h Warm Cache):** resolved fallbacks (and `agy-doctor` pre-seeds) are cached for 6 hours in `~/.cache/antigravity-claude/tier-models-v1.tsv` keyed on `(agy binary path + stat, OAuth token presence bit, settings.json & onboarding.json POSIX cksum content signatures, auth env, tier)` — immune to `agy 1.5.9`'s per-invocation `onboarding.json` `mtime` rewrites (measured on `1.5.9`) and OAuth token refreshes — so subsequent calls hit the entitled model on attempt #1 with zero cold-miss delay.
@@ -168,7 +168,7 @@ background a delegation expecting a later turn / "harness re-invocation": there 
 interactive session that will be re-invoked; there `agy-job cancel <id>` stops the job's
 descendant process tree — measured live on Linux with `agy 1.5.9`, CI-tested with stubs on
 macOS `/bin/bash 3.2`, and stub-tested for Windows Git Bash `ps -e` + `taskkill /T /F` from
-the #117 report, where `SIGSTOP` parent-freeze against hand-off respawn is POSIX-only — and
+the [upstream #117 report](https://github.com/yuting0624/antigravity-for-claude-code/issues/117), where `SIGSTOP` parent-freeze against hand-off respawn is POSIX-only — and
 marks `state=cancelled`.)
 
 ## Shared harness: one AGENTS.md for both AIs
@@ -232,11 +232,11 @@ commands** (`--yolo` grants write + terminal):
   every few releases — describe-only (pre-1.1.0), scratch-divert (1.1.0–1.1.2), soft-deny
   with a stderr notice (1.1.3+), **hard error by 1.1.13**, soft again from **1.1.20**
   (measured on 1.1.25; since 1.1.27 also named in the envelope's `denied_actions`, 1.2.0) — but **your workspace stays
-  untouched every time**; what varies is whether the run admits it (issue #10). The
+  untouched every time**; what varies is whether the run admits it ([upstream #10](https://github.com/yuting0624/antigravity-for-claude-code/issues/10)). The
   wrapper maps the soft deny and the hard error alike to exit 15. **Two things grant a write, and `--yolo` is
   the blunt one.** A `write_file(<dir>)` entry under `permissions.allow` in
   `~/.gemini/antigravity-cli/settings.json` allows writes **recursively beneath `<dir>`**
-  with no flag at all — confirmed on agy 1.1.9 by a controlled A/B (#37): covered target
+  with no flag at all — confirmed on agy 1.1.9 by a controlled A/B ([upstream #37](https://github.com/yuting0624/antigravity-for-claude-code/issues/37)): covered target
   wrote, uncovered target returned `PERMISSION_DENIED`, rule the only variable. agy's own
   denial text names the rule and offers `--yolo` as the *alternative*. `--yolo` auto-approves
   **all** tools and is what you need when no rule covers the target, or for web search / URL
@@ -357,7 +357,7 @@ Claude's context lean and the round-trips few. Apply these as hard rules:
    fix is **scale**: make each delegation big enough that the displaced Claude output
    dwarfs the one-time re-cache cost. Below the break-even, the hybrid loses on cost — three
    optimization variants were tested on a small task and none beat solo Claude (see
-   `docs/AB-RESULTS.md`). Delegate for cost reasons only at scale.
+   `docs/claude/AB-RESULTS.md`). Delegate for cost reasons only at scale.
 
 Honest framing for any cost claim: there is **no flat 8×/46%**. Below the break-even the
 hybrid costs more; above it, lean-context routing cuts frontier-model spend by a
@@ -530,8 +530,10 @@ unverified.**
 
 1. **Plan (Claude).** Decompose into sub-questions + an explicit list of load-bearing
    claims to verify. Claude owns scope and final synthesis.
-2. **Fan-out fetch (agy, cheap, parallel).** One call per sub-question; force compact
-   stdout so bulky pages stay in Gemini's context, not Claude's (on `agy < 1.4.10` where `--settings` is absent, replace `--read-only --allow-url` with `--yolo` or a `read_url(<target>)` rule so URL reads don't hit exit 15):
+2. **Fan-out fetch (agy, parallel).** Verify `agy --help` advertises `--settings`.
+   The wrapper grants URL reads and requests review for writes and commands. Search tools
+   depend on the account and its effective permissions. If settings are unavailable or a
+   search is denied, use an authorized retrieval tool and report any evidence gaps.
 
    ```bash
    "$ROOT" --tier flash --timeout 15m --read-only --allow-url \
@@ -548,9 +550,8 @@ unverified.**
       If the page does not support it, reply NOT SUPPORTED."
    ```
 
-4. **Adversarial verify (Claude).** Corroborate each key claim across ≥2 independent
-   domains; treat any single/vague/domain-only citation as unverified; sanity-check
-   dates; watch for Gemini parametric knowledge masquerading as a sourced fact.
+4. **Verify (Claude).** Open the exact cited sources. Confirm claims and quotations
+   against primary sources, check dates, and seek independent corroboration where warranted.
 5. **Synthesize (Claude).** Write the final cited report from verified findings only;
    mark anything uncorroborated as "unverified."
 
@@ -568,7 +569,9 @@ Built-in Google tools (MCP), verified working in headless `--print` mode:
   `search`, `conversational_search`).
 - **Google Cloud Logging**, **Notebooks** (Colab/Jupyter), **Visualization** (charts).
 
-Read-only web/URL tools work with `--read-only --allow-url` on `agy ≥ 1.4.10`; Vertex AI Search and terminal-backed tools in headless mode require `--yolo` (or specific `permissions.allow` rules, since print mode can't show approval prompts).
+On agy versions with `--settings`, `--read-only --allow-url` configures URL reads.
+Web search, Vertex AI Search, and terminal-backed tools have their own permission checks.
+Headless mode is unable to prompt for approval. Use the narrow grants required for the task.
 
 ## Economics (a financial lever, not the headline)
 

@@ -73,7 +73,7 @@ if __name__ == "__main__":
     r = measure(path)
     # cost-weighted units, normalized to input=1: output 5x, cache_write 1.25x,
     # cache_read 0.1x. These multipliers are a FIXED convention, not a price: every
-    # row in docs/AB-RESULTS.md was recorded in these units, so they stay put even
+    # row in docs/claude/AB-RESULTS.md was recorded in these units, so they stay put even
     # when prices.json moves (cache_read_mult is 0.05 there since 0.28.1). Dollars
     # come from prices.json in the est. USD line below, never from these weights.
     weighted = (r['output'] * 5 + r['input'] * 1 +

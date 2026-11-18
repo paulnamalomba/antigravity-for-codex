@@ -30,6 +30,7 @@
 #                         (uses afconvert on macOS, else ffmpeg; writes next to the source)
 #   -t, --tier <tier>     Delegation tier (default: pro — better at timestamps/diarization)
 #       --timeout <dur>   agy print-timeout (default: 15m; long media needs headroom)
+#       --require-scoped  Refuse if scoped permissions cannot be configured
 #       --print-command   Show the resolved agy-delegate call and exit (dry run)
 #   -h, --help            Show this help
 #
@@ -42,7 +43,7 @@ set -uo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 DELEGATE="${AGY_DELEGATE:-$HERE/agy-delegate.sh}"
 
-FILE=""; FOCUS=""; OUT=""; TIER="pro"; TIMEOUT="15m"; CONVERT=0; PRINT_CMD=0
+FILE=""; FOCUS=""; OUT=""; TIER="pro"; TIMEOUT="15m"; CONVERT=0; PRINT_CMD=0; REQUIRE_SCOPED=0; NEED_CONVERSION=0
 
 die()   { echo "agy-media: $*" >&2; exit 1; }
 need()  { [ "$1" -ge 2 ] || die "option '$2' needs a value"; }
@@ -70,6 +71,7 @@ while [ $# -gt 0 ]; do
     -t|--tier)       need "$#" "$1"; TIER="$2"; shift 2 ;;
     --timeout)       need "$#" "$1"; TIMEOUT="$2"; shift 2 ;;
     --print-command) PRINT_CMD=1; shift ;;
+    --require-scoped) REQUIRE_SCOPED=1; shift ;;
     -h|--help)       usage ;;
     -*)              die "unknown option '$1'" ;;
     *)               if [ -z "$FILE" ]; then FILE="$1"; else
@@ -91,19 +93,7 @@ if ! is_supported "$EXT"; then
   if is_convertible "$EXT"; then
     CONVERTED="$DIR/$STEM.wav"
     if [ "$CONVERT" -eq 1 ]; then
-      echo "agy-media: converting .$EXT -> wav (agy mishandles .$EXT)…" >&2
-      if command -v afconvert >/dev/null 2>&1; then
-        afconvert -f WAVE -d LEI16@16000 -c 1 "$ABS" "$CONVERTED" >/dev/null 2>&1 \
-          || die "afconvert failed converting '$ABS'"
-      elif command -v ffmpeg >/dev/null 2>&1; then
-        ffmpeg -loglevel error -i "$ABS" -ar 16000 -ac 1 "$CONVERTED" -y >/dev/null 2>&1 \
-          || die "ffmpeg failed converting '$ABS'"
-      else
-        echo "agy-media: no converter found (need afconvert on macOS, or ffmpeg)" >&2
-        exit 5
-      fi
-      ABS="$CONVERTED"; EXT="wav"
-      echo "agy-media: converted -> $ABS" >&2
+      NEED_CONVERSION=1
     else
       echo "agy-media: '.$EXT' is not reliably supported by agy (verified on 1.1.7: it fails with 'invalid argument' or hangs) — even though Gemini itself accepts it." >&2
       echo "agy-media: re-run with --convert, or convert once yourself:" >&2
@@ -124,12 +114,6 @@ fi
 
 [ -n "$OUT" ] || OUT="$DIR/$STEM.transcript.md"
 case "$OUT" in /*) ;; *) OUT="$(cd "$(dirname "$OUT")" && pwd)/$(basename "$OUT")" ;; esac
-
-# Size heads-up: long media is the usual cause of a timeout.
-BYTES="$(wc -c < "$ABS" 2>/dev/null | tr -d ' ')"
-if [ -n "$BYTES" ] && [ "$BYTES" -gt 26214400 ]; then
-  echo "agy-media: note: $((BYTES / 1048576)) MB input — long media can exceed the model's window and the print-timeout. If it times out, split the file (e.g. ~30 min chunks) and run them separately." >&2
-fi
 
 # --- probe scoped permissions (agy >= 1.4.10) before building the prompt -----
 # On agy >= 1.4.10 (advertising both --settings and --add-dir), scope tool permissions
@@ -159,6 +143,32 @@ if command -v agy >/dev/null 2>&1 && command -v python3 >/dev/null 2>&1; then
         esac ;;
     esac
   fi
+fi
+
+if [ "$REQUIRE_SCOPED" -eq 1 ] && [ -z "$SCOPED_SETTINGS" ]; then
+  die "scoped permissions unavailable; refusing the broad --yolo fallback (requires python3 and agy --help advertising --settings and --add-dir)"
+fi
+
+if [ "$NEED_CONVERSION" -eq 1 ]; then
+      echo "agy-media: converting .$EXT -> wav (agy mishandles .$EXT)…" >&2
+      if command -v afconvert >/dev/null 2>&1; then
+        afconvert -f WAVE -d LEI16@16000 -c 1 "$ABS" "$CONVERTED" >/dev/null 2>&1 \
+          || die "afconvert failed converting '$ABS'"
+      elif command -v ffmpeg >/dev/null 2>&1; then
+        ffmpeg -loglevel error -i "$ABS" -ar 16000 -ac 1 "$CONVERTED" -y >/dev/null 2>&1 \
+          || die "ffmpeg failed converting '$ABS'"
+      else
+        echo "agy-media: no converter found (need afconvert on macOS, or ffmpeg)" >&2
+        exit 5
+      fi
+      ABS="$CONVERTED"; EXT="wav"
+      echo "agy-media: converted -> $ABS" >&2
+fi
+
+# Size heads-up: long media is the usual cause of a timeout.
+BYTES="$(wc -c < "$ABS" 2>/dev/null | tr -d ' ')"
+if [ -n "$BYTES" ] && [ "$BYTES" -gt 26214400 ]; then
+  echo "agy-media: note: $((BYTES / 1048576)) MB input — long media can exceed the model's window and the print-timeout. If it times out, split the file (e.g. ~30 min chunks) and run them separately." >&2
 fi
 
 # --- build the delegation prompt --------------------------------------------

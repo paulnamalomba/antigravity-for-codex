@@ -11,6 +11,14 @@ bad()  { printf '  ✗ %s\n' "$*"; FAIL=1; }
 warn() { printf '  ⚠ %s\n' "$*"; }   # advisory; does NOT fail the check
 info() { printf '    %s\n' "$*"; }
 FAIL=0
+CODEX_CHECK=0
+case "${1:-}" in
+  "") ;;
+  --codex) CODEX_CHECK=1; shift ;;
+  -h|--help) echo "Usage: agy-doctor [--codex]"; exit 0 ;;
+  *) echo "Usage: agy-doctor [--codex]" >&2; exit 1 ;;
+esac
+[ "$#" -eq 0 ] || { echo "Usage: agy-doctor [--codex]" >&2; exit 1; }
 
 # Claude Code injects userConfig options as CLAUDE_PLUGIN_OPTION_* into HOOKS only,
 # never into Bash-tool subshells (#101). Load them from settings.json when unset.
@@ -462,7 +470,31 @@ check_tier_slot() {
   fi
 }
 
-echo "Antigravity for Claude Code — doctor"
+if [ "$CODEX_CHECK" -eq 1 ]; then
+  echo "Antigravity for Codex — doctor"
+  if command -v codex >/dev/null 2>&1; then
+    CODEX_VERSION="$(codex --version 2>/dev/null)"
+    if [ -n "$CODEX_VERSION" ]; then ok "Codex CLI: $CODEX_VERSION"; else warn "Codex version could not be determined"; fi
+    if command -v python3 >/dev/null 2>&1; then
+      CODEX_MARKETS="$(codex plugin marketplace list --json 2>/dev/null)"; CODEX_RC=$?
+      if [ "$CODEX_RC" -eq 0 ] && printf '%s' "$CODEX_MARKETS" | python3 -c 'import json,sys; x=json.load(sys.stdin); sys.exit(0 if any(m.get("name")=="antigravity-for-codex" for m in x.get("marketplaces", [])) else 1)' 2>/dev/null; then
+        ok "Codex marketplace antigravity-for-codex registered"
+      else bad "Codex marketplace not found or marketplace list unavailable"; fi
+      CODEX_PLUGINS="$(codex plugin list --json 2>/dev/null)"; CODEX_RC=$?
+      if [ "$CODEX_RC" -eq 0 ] && printf '%s' "$CODEX_PLUGINS" | python3 -c 'import json,sys; x=json.load(sys.stdin); sys.exit(0 if any(p.get("pluginId")=="antigravity@antigravity-for-codex" and p.get("installed") and p.get("enabled") for p in x.get("installed", [])) else 1)' 2>/dev/null; then
+        ok "Codex plugin antigravity@antigravity-for-codex installed and enabled"
+      else bad "Codex plugin not enabled or plugin list unavailable"; fi
+    else bad "python3 unavailable; cannot inspect Codex plugin JSON"; fi
+  else bad "Codex CLI not on PATH"; fi
+  for f in .codex-plugin/plugin.json .agents/plugins/marketplace.json hooks/codex-hooks.json; do
+    if [ -f "$ROOT/$f" ] && python3 -m json.tool "$ROOT/$f" >/dev/null 2>&1; then ok "$f valid JSON"; else bad "$f missing or invalid JSON"; fi
+  done
+  for skill in antigravity antigravity-research antigravity-jobs antigravity-handoff antigravity-review antigravity-media antigravity-cloud-debug antigravity-setup antigravity-migrate; do
+    if [ -f "$ROOT/codex/skills/$skill/SKILL.md" ]; then ok "Codex skill $skill present"; else bad "Codex skill $skill missing"; fi
+  done
+else
+  echo "Antigravity for Claude Code — doctor"
+fi
 
 # 1. agy on PATH
 if command -v agy >/dev/null 2>&1; then
@@ -627,11 +659,13 @@ for s in agy-delegate.sh agy-handoff.sh agy-job.sh agy-cost-compare.sh cloud-deb
 done
 
 # 4b. SessionStart / PreToolUse / UserPromptSubmit hooks executable
+if [ "$CODEX_CHECK" -eq 0 ]; then
 for h in check-agy.sh inject-policy.sh validate-delegate-bash.sh nudge-delegation.sh; do
   if [ -x "$ROOT/hooks/$h" ]; then ok "hooks/$h executable"; else
     bad "hooks/$h not executable"; info "fix: chmod +x \"$ROOT/hooks/$h\""
   fi
 done
+fi
 
 # 4b2. bin/ entrypoints executable (added to the Bash-tool PATH; commands/skills call
 #      these bare names — $CLAUDE_PLUGIN_ROOT is not exported to model-run Bash, issue #11)
@@ -653,7 +687,7 @@ if grep -qi microsoft /proc/version 2>/dev/null || [ -n "${WSL_DISTRO_NAME:-}" ]
 fi
 
 # 5. plugin version
-PJ="$ROOT/.claude-plugin/plugin.json"
+if [ "$CODEX_CHECK" -eq 1 ]; then PJ="$ROOT/.codex-plugin/plugin.json"; else PJ="$ROOT/.claude-plugin/plugin.json"; fi
 [ -f "$PJ" ] && ok "plugin: $(sed -n 's/.*"version"[: ]*"\([^"]*\)".*/v\1/p' "$PJ" | head -1)"
 
 echo ""
