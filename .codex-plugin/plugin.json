@@ -1,6 +1,6 @@
 {
   "name": "antigravity",
-  "version": "0.31.2",
+  "version": "0.31.17",
   "description": "Antigravity CLI delegation for Codex. Maintained by Paul Namalomba; based on antigravity-for-claude-code by linyuting (yuting0624).",
   "author": {
     "name": "Paul Namalomba",
